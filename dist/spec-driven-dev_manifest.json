@@ -1,0 +1,18 @@
+{
+  "skill_name": "spec-driven-dev",
+  "version": "1.0.0",
+  "package_date": "2026-03-06T20:48:43.205525",
+  "package_file": "spec-driven-dev_20260306_204843.zip",
+  "files_included": 13,
+  "description": "Spec-Driven Development Skill - A systematic approach to building software through specification-first development",
+  "author": "Spec-Driven Development Team",
+  "requirements": {
+    "python": ">=3.8",
+    "platform": "any"
+  },
+  "usage": {
+    "initialize_project": "python scripts/init_project.py <project_name>",
+    "validate_project": "python scripts/validate_project.py [project_path]",
+    "documentation": "See SKILL.md for detailed usage instructions"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "project": {
+    "name": "[Project Name]",
+    "version": "1.0.0",
+    "description": "[Project description]",
+    "repository": "[Git repository URL]"
+  },
+  
+  "workflow": {
+    "auto_commit": true,
+    "commit_message_template": "feat: {phase}-{plan}: {description}",
+    "require_verification": true,
+    "verification_types": ["automated", "manual", "integration"],
+    "create_summaries": true,
+    "update_state": true
+  },
+  
+  "quality": {
+    "test_coverage_threshold": 80,
+    "require_linting": true,
+    "require_type_checking": true,
+    "require_formatting": true,
+    "code_quality_checks": ["eslint", "prettier", "typescript"]
+  },
+  
+  "phases": {
+    "max_plans_per_phase": 5,
+    "default_wave_size": 2,
+    "allow_parallel_execution": true,
+    "require_dependency_resolution": true,
+    "auto_number_requirements": true
+  },
+  
+  "verification": {
+    "automated_tests": true,
+    "manual_verification": true,
+    "integration_tests": true,
+    "performance_tests": false,
+    "security_scan": false
+  },
+  
+  "documentation": {
+    "update_readme": true,
+    "create_api_docs": false,
+    "maintain_changelog": true,
+    "document_decisions": true
+  },
+  
+  "notifications": {
+    "phase_completion": true,
+    "verification_failure": true,
+    "blocker_detected": true,
+    "milestone_reached": true
+  },
+  
+  "integrations": {
+    "git": true,
+    "ci_cd": false,
+    "project_management": false,
+    "monitoring": false
+  }
+}
