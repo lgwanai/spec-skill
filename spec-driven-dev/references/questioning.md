@@ -1,10 +1,8 @@
-# Questioning Guide
+<questioning_guide>
 
-**Use during Step 2: Requirements Discussion.**
+Project initialization is dream extraction, not requirements gathering. You're helping the user discover and articulate what they want to build. This isn't a contract negotiation — it's collaborative thinking.
 
-Project initialization is dream extraction, not requirements gathering. You're helping the user discover and articulate what they want to build.
-
-## Philosophy
+<philosophy>
 
 **You are a thinking partner, not an interviewer.**
 
@@ -12,19 +10,23 @@ The user often has a fuzzy idea. Your job is to help them sharpen it. Ask questi
 
 Don't interrogate. Collaborate. Don't follow a script. Follow the thread.
 
-## The Goal
+</philosophy>
+
+<the_goal>
 
 By the end of questioning, you need enough clarity to write a PROJECT.md that downstream phases can act on:
 
-- **Research needs**: what domain to research, what the user already knows, what unknowns exist
-- **Requirements needs**: clear enough vision to scope v1 features
-- **Roadmap needs**: clear enough vision to decompose into phases, what "done" looks like
-- **plan-phase needs**: specific requirements to break into tasks, context for implementation choices
-- **execute-phase needs**: success criteria to verify against, the "why" behind requirements
+- **Research** needs: what domain to research, what the user already knows, what unknowns exist
+- **Requirements** needs: clear enough vision to scope v1 features
+- **Roadmap** needs: clear enough vision to decompose into phases, what "done" looks like
+- **plan-phase** needs: specific requirements to break into tasks, context for implementation choices
+- **execute-phase** needs: success criteria to verify against, the "why" behind requirements
 
 A vague PROJECT.md forces every downstream phase to guess. The cost compounds.
 
-## How to Question
+</the_goal>
+
+<how_to_question>
 
 **Start open.** Let them dump their mental model. Don't interrupt with structure.
 
@@ -38,110 +40,123 @@ A vague PROJECT.md forces every downstream phase to guess. The cost compounds.
 
 **Know when to stop.** When you understand what they want, why they want it, who it's for, and what done looks like — offer to proceed.
 
-## Question Types
+</how_to_question>
+
+<question_types>
 
 Use these as inspiration, not a checklist. Pick what's relevant to the thread.
 
-### Motivation — why this exists:
+**Motivation — why this exists:**
 - "What prompted this?"
-- "What problem are you solving?"
-- "Why now?"
-- "What happens if this doesn't exist?"
+- "What are you doing today that this replaces?"
+- "What would you do if this existed?"
 
-### Users — who it's for:
-- "Who will use this?"
-- "What do they currently do instead?"
-- "What's frustrating about their current solution?"
-- "How technically savvy are they?"
+**Concreteness — what it actually is:**
+- "Walk me through using this"
+- "You said X — what does that actually look like?"
+- "Give me an example"
 
-### Core value — the one thing that matters:
-- "If everything else fails, what must work?"
-- "What's the primary benefit users get?"
-- "What would make them recommend this to others?"
+**Clarification — what they mean:**
+- "When you say Z, do you mean A or B?"
+- "You mentioned X — tell me more about that"
 
-### Scope — what's in and out:
-- "What's absolutely necessary for v1?"
-- "What can wait for later?"
-- "What's explicitly out of scope and why?"
-- "What similar things exist, and how is this different?"
+**Success — how you'll know it's working:**
+- "How will you know this is working?"
+- "What does done look like?"
 
-### Success — how we know it's working:
-- "How will users know it's working?"
-- "What metrics would indicate success?"
-- "What does 'done' look like?"
-- "What would make you say 'this is exactly what I wanted'?"
+</question_types>
 
-### Technical context — implementation considerations:
-- "Any technical constraints or preferences?"
-- "Existing systems to integrate with?"
-- "Performance or scale requirements?"
-- "Security or compliance needs?"
+<using_askuserquestion>
 
-## Common Patterns
+Use AskUserQuestion to help users think by presenting concrete options to react to.
 
-### The Overly Ambitious User
-**Symptoms**: Long feature lists, no prioritization, unrealistic timelines.
-**Approach**: "Let's focus on what absolutely must work first. We can build the rest later."
+**Good options:**
+- Interpretations of what they might mean
+- Specific examples to confirm or deny
+- Concrete choices that reveal priorities
 
-### The Vague Visionary
-**Symptoms**: Abstract descriptions, no concrete examples.
-**Approach**: "Walk me through a specific user doing a specific thing."
+**Bad options:**
+- Generic categories ("Technical", "Business", "Other")
+- Leading options that presume an answer
+- Too many options (2-4 is ideal)
+- Headers longer than 12 characters (hard limit — validation will reject them)
 
-### The Technical Perfectionist
-**Symptoms**: Focus on implementation details before problem definition.
-**Approach**: "Let's first agree on what we're building, then we can discuss how."
+**Example — vague answer:**
+User says "it should be fast"
 
-### The "Just Like X But Better"
-**Symptoms**: References to existing products without clear differentiation.
-**Approach**: "What specifically about X doesn't work for you? What would 'better' mean here?"
+- header: "Fast"
+- question: "Fast how?"
+- options: ["Sub-second response", "Handles large datasets", "Quick to build", "Let me explain"]
 
-## Questioning Flow
+**Example — following a thread:**
+User mentions "frustrated with current tools"
 
-### Phase 1: Exploration (5-10 minutes)
-- Open-ended: "Tell me about what you want to build."
-- Follow-up: "What excites you most about this?"
-- Clarification: "When you say [vague term], what do you mean?"
+- header: "Frustration"
+- question: "What specifically frustrates you?"
+- options: ["Too many clicks", "Missing features", "Unreliable", "Let me explain"]
 
-### Phase 2: Definition (5-10 minutes)
-- Concrete: "Walk me through a user's first experience."
-- Boundaries: "What's absolutely necessary vs. nice to have?"
-- Success: "How will we know it's working?"
+**Tip for users — modifying an option:**
+Users who want a slightly modified version of an option can select "Other" and reference the option by number: `#1 but for finger joints only` or `#2 with pagination disabled`. This avoids retyping the full option text.
 
-### Phase 3: Validation (2-5 minutes)
-- Summary: "So if I understand correctly, you want to build [summary]"
-- Confirmation: "Is that right? What am I missing?"
-- Next steps: "Ready to document this and start planning?"
+</using_askuserquestion>
 
-## Red Flags
+<freeform_rule>
 
-### Vague Answers
-- "It should be good" → "What does 'good' mean specifically?"
-- "Users will love it" → "Which users? What will they love about it?"
-- "It needs to be fast" → "Fast compared to what? What's the target?"
+**When the user wants to explain freely, STOP using AskUserQuestion.**
 
-### Contradictions
-- "Simple but with all these features" → "Which features are truly essential?"
-- "For everyone but also specialized" → "Who's the primary user?"
+If a user selects "Other" and their response signals they want to describe something in their own words (e.g., "let me describe it", "I'll explain", "something else", or any open-ended reply that isn't choosing/modifying an existing option), you MUST:
 
-### Unrealistic Expectations
-- "Build Facebook in a weekend" → "What's the minimal version that delivers value?"
-- "No budget but enterprise scale" → "What constraints are we working with?"
+1. **Ask your follow-up as plain text** — NOT via AskUserQuestion
+2. **Wait for them to type at the normal prompt**
+3. **Resume AskUserQuestion** only after processing their freeform response
 
-## Success Indicators
+The same applies if YOU include a freeform-indicating option (like "Let me explain" or "Describe in detail") and the user selects it.
 
-You have enough clarity when:
-1. You can write a clear PROJECT.md description
-2. You can identify 3-5 core requirements
-3. You understand the primary user and their needs
-4. You know what "done" looks like for v1
-5. You have clear boundaries (in scope/out of scope)
+**Wrong:** User says "let me describe it" → AskUserQuestion("What feature?", ["Feature A", "Feature B", "Describe in detail"])
+**Right:** User says "let me describe it" → "Go ahead — what are you thinking?"
 
-## Transition to Documentation
+</freeform_rule>
 
-Once questioning is complete:
-1. Summarize key points back to the user
-2. Confirm understanding
-3. Proceed to create PROJECT.md
-4. Move to requirements gathering
+<context_checklist>
 
-Remember: Good questioning saves hours of rework later. Invest time upfront to get clarity.
+Use this as a **background checklist**, not a conversation structure. Check these mentally as you go. If gaps remain, weave questions naturally.
+
+- [ ] What they're building (concrete enough to explain to a stranger)
+- [ ] Why it needs to exist (the problem or desire driving it)
+- [ ] Who it's for (even if just themselves)
+- [ ] What "done" looks like (observable outcomes)
+
+Four things. If they volunteer more, capture it.
+
+</context_checklist>
+
+<decision_gate>
+
+When you could write a clear PROJECT.md, offer to proceed:
+
+- header: "Ready?"
+- question: "I think I understand what you're after. Ready to create PROJECT.md?"
+- options:
+  - "Create PROJECT.md" — Let's move forward
+  - "Keep exploring" — I want to share more / ask me more
+
+If "Keep exploring" — ask what they want to add or identify gaps and probe naturally.
+
+Loop until "Create PROJECT.md" selected.
+
+</decision_gate>
+
+<anti_patterns>
+
+- **Checklist walking** — Going through domains regardless of what they said
+- **Canned questions** — "What's your core value?" "What's out of scope?" regardless of context
+- **Corporate speak** — "What are your success criteria?" "Who are your stakeholders?"
+- **Interrogation** — Firing questions without building on answers
+- **Rushing** — Minimizing questions to get to "the work"
+- **Shallow acceptance** — Taking vague answers without probing
+- **Premature constraints** — Asking about tech stack before understanding the idea
+- **User skills** — NEVER ask about user's technical experience. Claude builds.
+
+</anti_patterns>
+
+</questioning_guide>

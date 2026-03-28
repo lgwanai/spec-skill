@@ -80,8 +80,8 @@ Create the detailed execution plan for the current phase, but **do not execute y
 
 **Actions**:
 1. Create/Update `.planning/phases/XX-phase/XX-PLAN.md`.
-2. **Define Verification**: For each requirement, define "Must-haves" (Truth, Artifact, Key link, Observable).
-3. **Plan Tasks**: Break down implementation steps to satisfy verification criteria.
+2. **Define Verification (must_haves)**: In the YAML frontmatter, define `must_haves` (`truths`, `artifacts`, `key_links`) based on the phase goal.
+3. **Plan Tasks**: Break down implementation steps to satisfy verification criteria. Use `<read_first>` tags in tasks to define files that must be read before execution, and `<acceptance_criteria>` for grep-verifiable conditions.
 4. **Review**: Check plan against the "Plan Verification Checklist".
 5. **STOP**: Present the full plan content to the user.
 6. **ASK**: "Here is the detailed plan. Does this look correct? Shall I proceed with execution?"
@@ -148,6 +148,10 @@ depends_on: []
 files_modified: []
 autonomous: true
 requirements: []
+must_haves:
+  truths: []
+  artifacts: []
+  key_links: []
 ---
 
 <objective>
@@ -160,8 +164,12 @@ Output: [What artifacts will be created]
 <task type="auto">
   <name>Task 1: [Action-oriented name]</name>
   <files>path/to/file.ext</files>
-  <action>[Specific implementation]</action>
+  <read_first>path/to/reference.ext</read_first>
+  <action>[Specific implementation - what to do, how to do it, with CONCRETE values]</action>
   <verify>[Command or check to prove it worked]</verify>
+  <acceptance_criteria>
+    - [Grep-verifiable condition]
+  </acceptance_criteria>
   <done>[Measurable acceptance criteria]</done>
 </task>
 </tasks>
@@ -179,9 +187,10 @@ Output: [What artifacts will be created]
 **Goal**: [What this phase delivers]
 **Depends on**: Nothing (first phase)
 **Requirements**: [REQ-01, REQ-02]
-**Success Criteria**:
+**Success Criteria** (what must be TRUE):
   1. [Observable behavior from user perspective]
   2. [Observable behavior from user perspective]
+**Plans**: [Number of plans, e.g., "3 plans" or "TBD"]
 ```
 
 ## Implementation Examples
@@ -225,7 +234,8 @@ Workflow:
 - **Maintain clean separation** between planning and execution
 
 ### 2. Verification Strategy
-- **Goal-backward verification**: Define success criteria before implementation
+- **Goal-backward verification**: Define `must_haves` (truths, artifacts, key_links) in the plan frontmatter before implementation
+- **Task-level verification**: Define grep-verifiable `acceptance_criteria` for each `<task>`
 - **Automated checks**: Tests, linting, type checking
 - **User verification**: Checkpoints for UI/UX validation
 - **Integration testing**: End-to-end workflow validation

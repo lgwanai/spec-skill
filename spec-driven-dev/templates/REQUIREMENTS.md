@@ -1,131 +1,231 @@
 # Requirements Template
 
-Template for `.planning/REQUIREMENTS.md` - scoped project requirements.
+Template for `.planning/REQUIREMENTS.md` — checkable requirements that define "done."
 
----
-
-## File Template
+<template>
 
 ```markdown
 # Requirements: [Project Name]
 
-## Overview
+**Defined:** [date]
+**Core Value:** [from PROJECT.md]
 
-[Brief summary of what requirements cover]
+## v1 Requirements
 
-## Requirement Format
+Requirements for initial release. Each maps to roadmap phases.
 
-Each requirement follows this structure:
-- **ID**: REQ-XXX (auto-incrementing)
-- **Description**: What needs to be built
-- **Acceptance Criteria**: How we know it's done
-- **Priority**: P0 (must have), P1 (should have), P2 (nice to have)
-- **Phase**: Which phase addresses this requirement
+### Authentication
 
-## Core Requirements (P0)
+- [ ] **AUTH-01**: User can sign up with email and password
+- [ ] **AUTH-02**: User receives email verification after signup
+- [ ] **AUTH-03**: User can reset password via email link
+- [ ] **AUTH-04**: User session persists across browser refresh
 
-### REQ-001: [Core functionality name]
-**Description**: [What this requirement entails]
-**Acceptance Criteria**:
-1. [Specific, testable condition]
-2. [Specific, testable condition]
-3. [Specific, testable condition]
-**Priority**: P0
-**Phase**: [Phase number]
+### [Category 2]
 
-### REQ-002: [Another core functionality]
-**Description**: [What this requirement entails]
-**Acceptance Criteria**:
-1. [Specific, testable condition]
-2. [Specific, testable condition]
-**Priority**: P0
-**Phase**: [Phase number]
+- [ ] **[CAT]-01**: [Requirement description]
+- [ ] **[CAT]-02**: [Requirement description]
+- [ ] **[CAT]-03**: [Requirement description]
 
-## Important Requirements (P1)
+### [Category 3]
 
-### REQ-003: [Important functionality]
-**Description**: [What this requirement entails]
-**Acceptance Criteria**:
-1. [Specific, testable condition]
-2. [Specific, testable condition]
-**Priority**: P1
-**Phase**: [Phase number]
+- [ ] **[CAT]-01**: [Requirement description]
+- [ ] **[CAT]-02**: [Requirement description]
 
-### REQ-004: [Another important functionality]
-**Description**: [What this requirement entails]
-**Acceptance Criteria**:
-1. [Specific, testable condition]
-**Priority**: P1
-**Phase**: [Phase number]
+## v2 Requirements
 
-## Enhancement Requirements (P2)
+Deferred to future release. Tracked but not in current roadmap.
 
-### REQ-005: [Enhancement functionality]
-**Description**: [What this requirement entails]
-**Acceptance Criteria**:
-1. [Specific, testable condition]
-**Priority**: P2
-**Phase**: [Phase number]
+### [Category]
 
-## Non-Functional Requirements
-
-### NFR-001: Performance
-**Description**: System performance expectations
-**Acceptance Criteria**:
-- Page load time < 2 seconds
-- API response time < 200ms for 95% of requests
-- Support 100 concurrent users
-
-### NFR-002: Security
-**Description**: Security requirements
-**Acceptance Criteria**:
-- All user data encrypted at rest
-- HTTPS enforced for all connections
-- Authentication required for sensitive operations
-
-### NFR-003: Reliability
-**Description**: System reliability expectations
-**Acceptance Criteria**:
-- 99.9% uptime
-- Automated backup system
-- Graceful error handling
+- **[CAT]-01**: [Requirement description]
+- **[CAT]-02**: [Requirement description]
 
 ## Out of Scope
 
-### Explicitly Excluded
-- [Feature 1] - [Reason for exclusion]
-- [Feature 2] - [Reason for exclusion]
-- [Feature 3] - [Reason for exclusion]
+Explicitly excluded. Documented to prevent scope creep.
 
-### Future Considerations
-- [Feature that may be added later]
-- [Enhancement for future versions]
-- [Integration with other systems]
+| Feature | Reason |
+|---------|--------|
+| [Feature] | [Why excluded] |
+| [Feature] | [Why excluded] |
 
-## Requirement Dependencies
+## Traceability
 
-### Dependency Graph
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| [REQ-ID] | Phase [N] | Pending |
+
+**Coverage:**
+- v1 requirements: [X] total
+- Mapped to phases: [Y]
+- Unmapped: [Z] ⚠️
+
+---
+*Requirements defined: [date]*
+*Last updated: [date] after [trigger]*
 ```
-REQ-001 → REQ-002 → REQ-003
-    ↓
-REQ-004 → REQ-005
+
+</template>
+
+<guidelines>
+
+**Requirement Format:**
+- ID: `[CATEGORY]-[NUMBER]` (AUTH-01, CONTENT-02, SOCIAL-03)
+- Description: User-centric, testable, atomic
+- Checkbox: Only for v1 requirements (v2 are not yet actionable)
+
+**Categories:**
+- Derive from research FEATURES.md categories
+- Keep consistent with domain conventions
+- Typical: Authentication, Content, Social, Notifications, Moderation, Payments, Admin
+
+**v1 vs v2:**
+- v1: Committed scope, will be in roadmap phases
+- v2: Acknowledged but deferred, not in current roadmap
+- Moving v2 → v1 requires roadmap update
+
+**Out of Scope:**
+- Explicit exclusions with reasoning
+- Prevents "why didn't you include X?" later
+- Anti-features from research belong here with warnings
+
+**Traceability:**
+- Empty initially, populated during roadmap creation
+- Each requirement maps to exactly one phase
+- Unmapped requirements = roadmap gap
+
+**Status Values:**
+- Pending: Not started
+- In Progress: Phase is active
+- Complete: Requirement verified
+- Blocked: Waiting on external factor
+
+</guidelines>
+
+<evolution>
+
+**After each phase completes:**
+1. Mark covered requirements as Complete
+2. Update traceability status
+3. Note any requirements that changed scope
+
+**After roadmap updates:**
+1. Verify all v1 requirements still mapped
+2. Add new requirements if scope expanded
+3. Move requirements to v2/out of scope if descoped
+
+**Requirement completion criteria:**
+- Requirement is "Complete" when:
+  - Feature is implemented
+  - Feature is verified (tests pass, manual check done)
+  - Feature is committed
+
+</evolution>
+
+<example>
+
+```markdown
+# Requirements: CommunityApp
+
+**Defined:** 2025-01-14
+**Core Value:** Users can share and discuss content with people who share their interests
+
+## v1 Requirements
+
+### Authentication
+
+- [ ] **AUTH-01**: User can sign up with email and password
+- [ ] **AUTH-02**: User receives email verification after signup
+- [ ] **AUTH-03**: User can reset password via email link
+- [ ] **AUTH-04**: User session persists across browser refresh
+
+### Profiles
+
+- [ ] **PROF-01**: User can create profile with display name
+- [ ] **PROF-02**: User can upload avatar image
+- [ ] **PROF-03**: User can write bio (max 500 chars)
+- [ ] **PROF-04**: User can view other users' profiles
+
+### Content
+
+- [ ] **CONT-01**: User can create text post
+- [ ] **CONT-02**: User can upload image with post
+- [ ] **CONT-03**: User can edit own posts
+- [ ] **CONT-04**: User can delete own posts
+- [ ] **CONT-05**: User can view feed of posts
+
+### Social
+
+- [ ] **SOCL-01**: User can follow other users
+- [ ] **SOCL-02**: User can unfollow users
+- [ ] **SOCL-03**: User can like posts
+- [ ] **SOCL-04**: User can comment on posts
+- [ ] **SOCL-05**: User can view activity feed (followed users' posts)
+
+## v2 Requirements
+
+### Notifications
+
+- **NOTF-01**: User receives in-app notifications
+- **NOTF-02**: User receives email for new followers
+- **NOTF-03**: User receives email for comments on own posts
+- **NOTF-04**: User can configure notification preferences
+
+### Moderation
+
+- **MODR-01**: User can report content
+- **MODR-02**: User can block other users
+- **MODR-03**: Admin can view reported content
+- **MODR-04**: Admin can remove content
+- **MODR-05**: Admin can ban users
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Real-time chat | High complexity, not core to community value |
+| Video posts | Storage/bandwidth costs, defer to v2+ |
+| OAuth login | Email/password sufficient for v1 |
+| Mobile app | Web-first, mobile later |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| PROF-01 | Phase 2 | Pending |
+| PROF-02 | Phase 2 | Pending |
+| PROF-03 | Phase 2 | Pending |
+| PROF-04 | Phase 2 | Pending |
+| CONT-01 | Phase 3 | Pending |
+| CONT-02 | Phase 3 | Pending |
+| CONT-03 | Phase 3 | Pending |
+| CONT-04 | Phase 3 | Pending |
+| CONT-05 | Phase 3 | Pending |
+| SOCL-01 | Phase 4 | Pending |
+| SOCL-02 | Phase 4 | Pending |
+| SOCL-03 | Phase 4 | Pending |
+| SOCL-04 | Phase 4 | Pending |
+| SOCL-05 | Phase 4 | Pending |
+
+**Coverage:**
+- v1 requirements: 18 total
+- Mapped to phases: 18
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2025-01-14*
+*Last updated: 2025-01-14 after initial definition*
 ```
 
-### Implementation Order
-1. REQ-001 (Foundation)
-2. REQ-002 (Builds on foundation)
-3. REQ-004 (Parallel work)
-4. REQ-003 (Requires REQ-002)
-5. REQ-005 (Requires REQ-004)
-
-## Change Log
-
-### YYYY-MM-DD: Initial Requirements
-- Created initial requirement set
-- Prioritized P0 requirements
-- Defined acceptance criteria
-
-### YYYY-MM-DD: Updated Requirements
-- [Change description]
-- [Reason for change]
-```
+</example>

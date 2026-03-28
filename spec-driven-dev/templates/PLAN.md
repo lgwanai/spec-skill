@@ -1,6 +1,6 @@
 # Phase Plan Template
 
-Template for `.planning/phases/XX-name/{phase}-{plan}-PLAN.md` - executable phase plans.
+Template for `.planning/phases/XX-name/{phase}-{plan}-PLAN.md` - executable phase plans optimized for parallel execution.
 
 **Naming:** Use `{phase}-{plan}-PLAN.md` format (e.g., `01-02-PLAN.md` for Phase 1, Plan 2)
 
@@ -17,7 +17,13 @@ wave: N                     # Execution wave (1, 2, 3...). Pre-computed at plan 
 depends_on: []              # Plan IDs this plan requires (e.g., ["01-01"]).
 files_modified: []          # Files this plan modifies.
 autonomous: true            # false if plan has checkpoints requiring user interaction
-requirements: []            # REQUIRED — Requirement IDs from ROADMAP this plan addresses.
+requirements: []            # REQUIRED — Requirement IDs from ROADMAP this plan addresses. MUST NOT be empty.
+
+# Goal-backward verification (derived during planning, verified after execution)
+must_haves:
+  truths: []                # Observable behaviors that must be true for goal achievement
+  artifacts: []             # Files that must exist with real implementation
+  key_links: []             # Critical connections between artifacts
 ---
 
 <objective>
@@ -25,18 +31,16 @@ requirements: []            # REQUIRED — Requirement IDs from ROADMAP this pla
 
 Purpose: [Why this matters for the project]
 Output: [What artifacts will be created]
-
-Verification:
-- Truth: [What must be true - e.g. Form accepts valid input]
-- Artifact: [What exists - e.g. Endpoint POST /api/login]
-- Key link: [How they connect - e.g. Form submits to endpoint]
-- Observable: [What user sees - e.g. Dashboard loads]
 </objective>
 
 <context>
 @.planning/PROJECT.md
 @.planning/ROADMAP.md
 @.planning/STATE.md
+
+# Only reference prior plan SUMMARYs if genuinely needed:
+# - This plan uses types/exports from prior plan
+# - Prior plan made decision that affects this plan
 
 [Relevant source files:]
 @src/path/to/relevant.ts
@@ -47,16 +51,25 @@ Verification:
 <task type="auto">
   <name>Task 1: [Action-oriented name]</name>
   <files>path/to/file.ext, another/file.ext</files>
-  <action>[Specific implementation - what to do, how to do it, what to avoid and WHY]</action>
+  <read_first>path/to/reference.ext, path/to/source-of-truth.ext</read_first>
+  <action>[Specific implementation - what to do, how to do it, what to avoid and WHY. Include CONCRETE values: exact identifiers, parameters, expected outputs, file paths, command arguments.]</action>
   <verify>[Command or check to prove it worked]</verify>
+  <acceptance_criteria>
+    - [Grep-verifiable condition: "file.ext contains 'exact string'"]
+    - [Measurable condition: "output.ext uses 'expected-value'"]
+  </acceptance_criteria>
   <done>[Measurable acceptance criteria]</done>
 </task>
 
 <task type="auto">
   <name>Task 2: [Action-oriented name]</name>
   <files>path/to/file.ext</files>
-  <action>[Specific implementation]</action>
+  <read_first>path/to/reference.ext</read_first>
+  <action>[Specific implementation with concrete values]</action>
   <verify>[Command or check]</verify>
+  <acceptance_criteria>
+    - [Condition 1]
+  </acceptance_criteria>
   <done>[Acceptance criteria]</done>
 </task>
 

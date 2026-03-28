@@ -1,242 +1,612 @@
 # Verification Patterns
 
-Verification ensures that what was built matches what was intended. This document outlines patterns for effective verification in spec-driven development.
+How to verify different types of artifacts are real implementations, not stubs or placeholders.
 
-## Goal-Backward Verification
+<core_principle>
+**Existence ≠ Implementation**
 
-### Core Principle
-Define success criteria BEFORE implementation, then verify against those criteria AFTER implementation.
+A file existing does not mean the feature works. Verification must check:
+1. **Exists** - File is present at expected path
+2. **Substantive** - Content is real implementation, not placeholder
+3. **Wired** - Connected to the rest of the system
+4. **Functional** - Actually works when invoked
 
-### Process
-1. **During planning**: Define "must-haves" - observable behaviors that must be true
-2. **During execution**: Implement with verification in mind
-3. **After completion**: Verify all must-haves are satisfied
+Levels 1-3 can be checked programmatically. Level 4 often requires human verification.
+</core_principle>
 
-### Example
-**Plan requirement**: "User can create an account"
-**Must-haves**:
-- Truth: Registration form accepts valid email/password
-- Artifact: `POST /api/register` endpoint exists
-- Key link: Form submits to endpoint, endpoint creates user record
-- Observable: User receives confirmation email
+<stub_detection>
 
-## Plan Verification (Pre-Implementation)
+## Universal Stub Patterns
 
-Before executing any phase, the plan itself must be verified.
+These patterns indicate placeholder code regardless of file type:
 
-### Checklist
-- **Completeness**: Does it cover all requirements for this phase?
-- **Feasibility**: Are the technical choices realistic?
-- **Clarity**: Are the tasks actionable and unambiguous?
-- **Verification**: Are the success criteria defined and testable?
-
-### Process
-1.  **Review**: Present the `PLAN.md` to the user.
-2.  **Discuss**: Address any concerns or missing details.
-3.  **Approve**: Get explicit confirmation before proceeding.
-
-## Verification Types
-
-### 1. Automated Verification
-**When to use**: Repetitive checks, regression prevention, CI/CD pipelines
-
-**Patterns**:
-- **Unit tests**: Individual function/component testing
-- **Integration tests**: Component interaction testing
-- **End-to-end tests**: Full workflow testing
-- **Static analysis**: Code quality, security, type checking
-
-**Examples**:
+**Comment-based stubs:**
 ```bash
-# Run test suite
-npm test
-
-# Check type safety
-npm run typecheck
-
-# Lint code
-npm run lint
-
-# Security scan
-npm audit
+# Grep patterns for stub comments
+grep -E "(TODO|FIXME|XXX|HACK|PLACEHOLDER)" "$file"
+grep -E "implement|add later|coming soon|will be" "$file" -i
+grep -E "// \.\.\.|/\* \.\.\. \*/|# \.\.\." "$file"
 ```
 
-### 2. Manual Verification
-**When to use**: UI/UX validation, subjective quality, exploratory testing
-
-**Patterns**:
-- **Visual inspection**: UI appearance and layout
-- **User workflow**: Complete user journey testing
-- **Accessibility**: Screen reader compatibility, keyboard navigation
-- **Cross-browser**: Different browser testing
-
-**Process**:
-1. Create verification checklist
-2. Execute each check manually
-3. Document results and issues
-4. Sign off when all checks pass
-
-### 3. Integration Verification
-**When to use**: System interaction, API contracts, data flow
-
-**Patterns**:
-- **API contract testing**: Verify request/response formats
-- **Data flow testing**: End-to-end data validation
-- **System integration**: Multi-service workflow testing
-
-**Examples**:
+**Placeholder text in output:**
 ```bash
-# Test API endpoints
-curl -X POST http://localhost:3000/api/register
-
-# Verify database state
-psql -c "SELECT COUNT(*) FROM users;"
-
-# Check service health
-curl http://localhost:3000/health
+# UI placeholder patterns
+grep -E "placeholder|lorem ipsum|coming soon|under construction" "$file" -i
+grep -E "sample|example|test data|dummy" "$file" -i
+grep -E "\[.*\]|<.*>|\{.*\}" "$file"  # Template brackets left in
 ```
 
-## Verification Workflow
+**Empty or trivial implementations:**
+```bash
+# Functions that do nothing
+grep -E "return null|return undefined|return \{\}|return \[\]" "$file"
+grep -E "pass$|\.\.\.|\bnothing\b" "$file"
+grep -E "console\.(log|warn|error).*only" "$file"  # Log-only functions
+```
 
-### Pre-Implementation
-1. **Define criteria**: What must be true when done
-2. **Create tests**: Write test cases that verify criteria
-3. **Plan verification**: Decide what to verify and how
+**Hardcoded values where dynamic expected:**
+```bash
+# Hardcoded IDs, counts, or content
+grep -E "id.*=.*['\"].*['\"]" "$file"  # Hardcoded string IDs
+grep -E "count.*=.*\d+|length.*=.*\d+" "$file"  # Hardcoded counts
+grep -E "\\\$\d+\.\d{2}|\d+ items" "$file"  # Hardcoded display values
+```
 
-### During Implementation
-1. **Run tests frequently**: Catch issues early
-2. **Verify incrementally**: Don't wait until the end
-3. **Document issues**: Track what needs fixing
+</stub_detection>
 
-### Post-Implementation
-1. **Run full test suite**: Ensure everything works
-2. **Manual verification**: Subjective quality checks
-3. **Integration testing**: System-wide validation
-4. **Sign-off**: Document successful verification
+<react_components>
 
-## Verification Tools
+## React/Next.js Components
 
-### Testing Frameworks
-- **Jest/React Testing Library**: React component testing
-- **Pytest**: Python testing
-- **JUnit**: Java testing
-- **Cypress/Playwright**: End-to-end testing
+**Existence check:**
+```bash
+# File exists and exports component
+[ -f "$component_path" ] && grep -E "export (default |)function|export const.*=.*\(" "$component_path"
+```
 
-### Code Quality
-- **ESLint/Prettier**: JavaScript/TypeScript linting
-- **Black/Flake8**: Python formatting and linting
-- **SonarQube**: Code quality analysis
+**Substantive check:**
+```bash
+# Returns actual JSX, not placeholder
+grep -E "return.*<" "$component_path" | grep -v "return.*null" | grep -v "placeholder" -i
 
-### Security
-- **npm audit**: Node.js dependency security
-- **Snyk**: Multi-language security scanning
-- **OWASP ZAP**: Web application security testing
+# Has meaningful content (not just wrapper div)
+grep -E "<[A-Z][a-zA-Z]+|className=|onClick=|onChange=" "$component_path"
 
-### Performance
-- **Lighthouse**: Web performance testing
-- **Apache Bench**: API load testing
-- **JMeter**: Load and performance testing
+# Uses props or state (not static)
+grep -E "props\.|useState|useEffect|useContext|\{.*\}" "$component_path"
+```
 
-## Best Practices
+**Stub patterns specific to React:**
+```javascript
+// RED FLAGS - These are stubs:
+return <div>Component</div>
+return <div>Placeholder</div>
+return <div>{/* TODO */}</div>
+return <p>Coming soon</p>
+return null
+return <></>
 
-### 1. Start with Verification
-Define how you'll verify success before writing any code.
+// Also stubs - empty handlers:
+onClick={() => {}}
+onChange={() => console.log('clicked')}
+onSubmit={(e) => e.preventDefault()}  // Only prevents default, does nothing
+```
 
-### 2. Automate What You Can
-Automated tests catch regressions and save time.
+**Wiring check:**
+```bash
+# Component imports what it needs
+grep -E "^import.*from" "$component_path"
 
-### 3. Keep Tests Fast
-Slow tests discourage frequent running.
+# Props are actually used (not just received)
+# Look for destructuring or props.X usage
+grep -E "\{ .* \}.*props|\bprops\.[a-zA-Z]+" "$component_path"
 
-### 4. Test User Experience
-Don't just test code - test what users actually experience.
+# API calls exist (for data-fetching components)
+grep -E "fetch\(|axios\.|useSWR|useQuery|getServerSideProps|getStaticProps" "$component_path"
+```
 
-### 5. Verify Edge Cases
-Test boundary conditions and error scenarios.
+**Functional verification (human required):**
+- Does the component render visible content?
+- Do interactive elements respond to clicks?
+- Does data load and display?
+- Do error states show appropriately?
 
-### 6. Document Verification
-Record what was verified, how, and by whom.
+</react_components>
 
-### 7. Continuous Verification
-Integrate verification into your development workflow.
+<api_routes>
 
-## Common Pitfalls
+## API Routes (Next.js App Router / Express / etc.)
 
-### 1. Incomplete Verification
-**Problem**: Not verifying all success criteria
-**Solution**: Use verification checklist for each requirement
+**Existence check:**
+```bash
+# Route file exists
+[ -f "$route_path" ]
 
-### 2. Over-Reliance on Automation
-**Problem**: Missing subjective quality issues
-**Solution**: Include manual verification steps
+# Exports HTTP method handlers (Next.js App Router)
+grep -E "export (async )?(function|const) (GET|POST|PUT|PATCH|DELETE)" "$route_path"
 
-### 3. Verification Drift
-**Problem**: Verification doesn't match actual requirements
-**Solution**: Regularly review and update verification criteria
+# Or Express-style handlers
+grep -E "\.(get|post|put|patch|delete)\(" "$route_path"
+```
 
-### 4. False Positives
-**Problem**: Tests pass but functionality is broken
-**Solution**: Include integration and end-to-end testing
+**Substantive check:**
+```bash
+# Has actual logic, not just return statement
+wc -l "$route_path"  # More than 10-15 lines suggests real implementation
 
-### 5. Verification Overhead
-**Problem**: Too much time spent on verification
-**Solution**: Prioritize critical paths and automate where possible
+# Interacts with data source
+grep -E "prisma\.|db\.|mongoose\.|sql|query|find|create|update|delete" "$route_path" -i
 
-## Templates
+# Has error handling
+grep -E "try|catch|throw|error|Error" "$route_path"
 
-### Verification Checklist Template
+# Returns meaningful response
+grep -E "Response\.json|res\.json|res\.send|return.*\{" "$route_path" | grep -v "message.*not implemented" -i
+```
+
+**Stub patterns specific to API routes:**
+```typescript
+// RED FLAGS - These are stubs:
+export async function POST() {
+  return Response.json({ message: "Not implemented" })
+}
+
+export async function GET() {
+  return Response.json([])  // Empty array with no DB query
+}
+
+export async function PUT() {
+  return new Response()  // Empty response
+}
+
+// Console log only:
+export async function POST(req) {
+  console.log(await req.json())
+  return Response.json({ ok: true })
+}
+```
+
+**Wiring check:**
+```bash
+# Imports database/service clients
+grep -E "^import.*prisma|^import.*db|^import.*client" "$route_path"
+
+# Actually uses request body (for POST/PUT)
+grep -E "req\.json\(\)|req\.body|request\.json\(\)" "$route_path"
+
+# Validates input (not just trusting request)
+grep -E "schema\.parse|validate|zod|yup|joi" "$route_path"
+```
+
+**Functional verification (human or automated):**
+- Does GET return real data from database?
+- Does POST actually create a record?
+- Does error response have correct status code?
+- Are auth checks actually enforced?
+
+</api_routes>
+
+<database_schema>
+
+## Database Schema (Prisma / Drizzle / SQL)
+
+**Existence check:**
+```bash
+# Schema file exists
+[ -f "prisma/schema.prisma" ] || [ -f "drizzle/schema.ts" ] || [ -f "src/db/schema.sql" ]
+
+# Model/table is defined
+grep -E "^model $model_name|CREATE TABLE $table_name|export const $table_name" "$schema_path"
+```
+
+**Substantive check:**
+```bash
+# Has expected fields (not just id)
+grep -A 20 "model $model_name" "$schema_path" | grep -E "^\s+\w+\s+\w+"
+
+# Has relationships if expected
+grep -E "@relation|REFERENCES|FOREIGN KEY" "$schema_path"
+
+# Has appropriate field types (not all String)
+grep -A 20 "model $model_name" "$schema_path" | grep -E "Int|DateTime|Boolean|Float|Decimal|Json"
+```
+
+**Stub patterns specific to schemas:**
+```prisma
+// RED FLAGS - These are stubs:
+model User {
+  id String @id
+  // TODO: add fields
+}
+
+model Message {
+  id        String @id
+  content   String  // Only one real field
+}
+
+// Missing critical fields:
+model Order {
+  id     String @id
+  // No: userId, items, total, status, createdAt
+}
+```
+
+**Wiring check:**
+```bash
+# Migrations exist and are applied
+ls prisma/migrations/ 2>/dev/null | wc -l  # Should be > 0
+npx prisma migrate status 2>/dev/null | grep -v "pending"
+
+# Client is generated
+[ -d "node_modules/.prisma/client" ]
+```
+
+**Functional verification:**
+```bash
+# Can query the table (automated)
+npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM $table_name"
+```
+
+</database_schema>
+
+<hooks_utilities>
+
+## Custom Hooks and Utilities
+
+**Existence check:**
+```bash
+# File exists and exports function
+[ -f "$hook_path" ] && grep -E "export (default )?(function|const)" "$hook_path"
+```
+
+**Substantive check:**
+```bash
+# Hook uses React hooks (for custom hooks)
+grep -E "useState|useEffect|useCallback|useMemo|useRef|useContext" "$hook_path"
+
+# Has meaningful return value
+grep -E "return \{|return \[" "$hook_path"
+
+# More than trivial length
+[ $(wc -l < "$hook_path") -gt 10 ]
+```
+
+**Stub patterns specific to hooks:**
+```typescript
+// RED FLAGS - These are stubs:
+export function useAuth() {
+  return { user: null, login: () => {}, logout: () => {} }
+}
+
+export function useCart() {
+  const [items, setItems] = useState([])
+  return { items, addItem: () => console.log('add'), removeItem: () => {} }
+}
+
+// Hardcoded return:
+export function useUser() {
+  return { name: "Test User", email: "test@example.com" }
+}
+```
+
+**Wiring check:**
+```bash
+# Hook is actually imported somewhere
+grep -r "import.*$hook_name" src/ --include="*.tsx" --include="*.ts" | grep -v "$hook_path"
+
+# Hook is actually called
+grep -r "$hook_name()" src/ --include="*.tsx" --include="*.ts" | grep -v "$hook_path"
+```
+
+</hooks_utilities>
+
+<environment_config>
+
+## Environment Variables and Configuration
+
+**Existence check:**
+```bash
+# .env file exists
+[ -f ".env" ] || [ -f ".env.local" ]
+
+# Required variable is defined
+grep -E "^$VAR_NAME=" .env .env.local 2>/dev/null
+```
+
+**Substantive check:**
+```bash
+# Variable has actual value (not placeholder)
+grep -E "^$VAR_NAME=.+" .env .env.local 2>/dev/null | grep -v "your-.*-here|xxx|placeholder|TODO" -i
+
+# Value looks valid for type:
+# - URLs should start with http
+# - Keys should be long enough
+# - Booleans should be true/false
+```
+
+**Stub patterns specific to env:**
+```bash
+# RED FLAGS - These are stubs:
+DATABASE_URL=your-database-url-here
+STRIPE_SECRET_KEY=sk_test_xxx
+API_KEY=placeholder
+NEXT_PUBLIC_API_URL=http://localhost:3000  # Still pointing to localhost in prod
+```
+
+**Wiring check:**
+```bash
+# Variable is actually used in code
+grep -r "process\.env\.$VAR_NAME|env\.$VAR_NAME" src/ --include="*.ts" --include="*.tsx"
+
+# Variable is in validation schema (if using zod/etc for env)
+grep -E "$VAR_NAME" src/env.ts src/env.mjs 2>/dev/null
+```
+
+</environment_config>
+
+<wiring_verification>
+
+## Wiring Verification Patterns
+
+Wiring verification checks that components actually communicate. This is where most stubs hide.
+
+### Pattern: Component → API
+
+**Check:** Does the component actually call the API?
+
+```bash
+# Find the fetch/axios call
+grep -E "fetch\(['\"].*$api_path|axios\.(get|post).*$api_path" "$component_path"
+
+# Verify it's not commented out
+grep -E "fetch\(|axios\." "$component_path" | grep -v "^.*//.*fetch"
+
+# Check the response is used
+grep -E "await.*fetch|\.then\(|setData|setState" "$component_path"
+```
+
+**Red flags:**
+```typescript
+// Fetch exists but response ignored:
+fetch('/api/messages')  // No await, no .then, no assignment
+
+// Fetch in comment:
+// fetch('/api/messages').then(r => r.json()).then(setMessages)
+
+// Fetch to wrong endpoint:
+fetch('/api/message')  // Typo - should be /api/messages
+```
+
+### Pattern: API → Database
+
+**Check:** Does the API route actually query the database?
+
+```bash
+# Find the database call
+grep -E "prisma\.$model|db\.query|Model\.find" "$route_path"
+
+# Verify it's awaited
+grep -E "await.*prisma|await.*db\." "$route_path"
+
+# Check result is returned
+grep -E "return.*json.*data|res\.json.*result" "$route_path"
+```
+
+**Red flags:**
+```typescript
+// Query exists but result not returned:
+await prisma.message.findMany()
+return Response.json({ ok: true })  // Returns static, not query result
+
+// Query not awaited:
+const messages = prisma.message.findMany()  // Missing await
+return Response.json(messages)  // Returns Promise, not data
+```
+
+### Pattern: Form → Handler
+
+**Check:** Does the form submission actually do something?
+
+```bash
+# Find onSubmit handler
+grep -E "onSubmit=\{|handleSubmit" "$component_path"
+
+# Check handler has content
+grep -A 10 "onSubmit.*=" "$component_path" | grep -E "fetch|axios|mutate|dispatch"
+
+# Verify not just preventDefault
+grep -A 5 "onSubmit" "$component_path" | grep -v "only.*preventDefault" -i
+```
+
+**Red flags:**
+```typescript
+// Handler only prevents default:
+onSubmit={(e) => e.preventDefault()}
+
+// Handler only logs:
+const handleSubmit = (data) => {
+  console.log(data)
+}
+
+// Handler is empty:
+onSubmit={() => {}}
+```
+
+### Pattern: State → Render
+
+**Check:** Does the component render state, not hardcoded content?
+
+```bash
+# Find state usage in JSX
+grep -E "\{.*messages.*\}|\{.*data.*\}|\{.*items.*\}" "$component_path"
+
+# Check map/render of state
+grep -E "\.map\(|\.filter\(|\.reduce\(" "$component_path"
+
+# Verify dynamic content
+grep -E "\{[a-zA-Z_]+\." "$component_path"  # Variable interpolation
+```
+
+**Red flags:**
+```tsx
+// Hardcoded instead of state:
+return <div>
+  <p>Message 1</p>
+  <p>Message 2</p>
+</div>
+
+// State exists but not rendered:
+const [messages, setMessages] = useState([])
+return <div>No messages</div>  // Always shows "no messages"
+
+// Wrong state rendered:
+const [messages, setMessages] = useState([])
+return <div>{otherData.map(...)}</div>  // Uses different data
+```
+
+</wiring_verification>
+
+<verification_checklist>
+
+## Quick Verification Checklist
+
+For each artifact type, run through this checklist:
+
+### Component Checklist
+- [ ] File exists at expected path
+- [ ] Exports a function/const component
+- [ ] Returns JSX (not null/empty)
+- [ ] No placeholder text in render
+- [ ] Uses props or state (not static)
+- [ ] Event handlers have real implementations
+- [ ] Imports resolve correctly
+- [ ] Used somewhere in the app
+
+### API Route Checklist
+- [ ] File exists at expected path
+- [ ] Exports HTTP method handlers
+- [ ] Handlers have more than 5 lines
+- [ ] Queries database or service
+- [ ] Returns meaningful response (not empty/placeholder)
+- [ ] Has error handling
+- [ ] Validates input
+- [ ] Called from frontend
+
+### Schema Checklist
+- [ ] Model/table defined
+- [ ] Has all expected fields
+- [ ] Fields have appropriate types
+- [ ] Relationships defined if needed
+- [ ] Migrations exist and applied
+- [ ] Client generated
+
+### Hook/Utility Checklist
+- [ ] File exists at expected path
+- [ ] Exports function
+- [ ] Has meaningful implementation (not empty returns)
+- [ ] Used somewhere in the app
+- [ ] Return values consumed
+
+### Wiring Checklist
+- [ ] Component → API: fetch/axios call exists and uses response
+- [ ] API → Database: query exists and result returned
+- [ ] Form → Handler: onSubmit calls API/mutation
+- [ ] State → Render: state variables appear in JSX
+
+</verification_checklist>
+
+<automated_verification_script>
+
+## Automated Verification Approach
+
+For the verification subagent, use this pattern:
+
+```bash
+# 1. Check existence
+check_exists() {
+  [ -f "$1" ] && echo "EXISTS: $1" || echo "MISSING: $1"
+}
+
+# 2. Check for stub patterns
+check_stubs() {
+  local file="$1"
+  local stubs=$(grep -c -E "TODO|FIXME|placeholder|not implemented" "$file" 2>/dev/null || echo 0)
+  [ "$stubs" -gt 0 ] && echo "STUB_PATTERNS: $stubs in $file"
+}
+
+# 3. Check wiring (component calls API)
+check_wiring() {
+  local component="$1"
+  local api_path="$2"
+  grep -q "$api_path" "$component" && echo "WIRED: $component → $api_path" || echo "NOT_WIRED: $component → $api_path"
+}
+
+# 4. Check substantive (more than N lines, has expected patterns)
+check_substantive() {
+  local file="$1"
+  local min_lines="$2"
+  local pattern="$3"
+  local lines=$(wc -l < "$file" 2>/dev/null || echo 0)
+  local has_pattern=$(grep -c -E "$pattern" "$file" 2>/dev/null || echo 0)
+  [ "$lines" -ge "$min_lines" ] && [ "$has_pattern" -gt 0 ] && echo "SUBSTANTIVE: $file" || echo "THIN: $file ($lines lines, $has_pattern matches)"
+}
+```
+
+Run these checks against each must-have artifact. Aggregate results into VERIFICATION.md.
+
+</automated_verification_script>
+
+<human_verification_triggers>
+
+## When to Require Human Verification
+
+Some things can't be verified programmatically. Flag these for human testing:
+
+**Always human:**
+- Visual appearance (does it look right?)
+- User flow completion (can you actually do the thing?)
+- Real-time behavior (WebSocket, SSE)
+- External service integration (Stripe, email sending)
+- Error message clarity (is the message helpful?)
+- Performance feel (does it feel fast?)
+
+**Human if uncertain:**
+- Complex wiring that grep can't trace
+- Dynamic behavior depending on state
+- Edge cases and error states
+- Mobile responsiveness
+- Accessibility
+
+**Format for human verification request:**
 ```markdown
-# Verification Checklist: [Feature Name]
+## Human Verification Required
 
-## Automated Tests
-- [ ] Unit tests pass
-- [ ] Integration tests pass
-- [ ] End-to-end tests pass
-- [ ] Code quality checks pass
+### 1. Chat message sending
+**Test:** Type a message and click Send
+**Expected:** Message appears in list, input clears
+**Check:** Does message persist after refresh?
 
-## Manual Verification
-- [ ] UI appears correctly
-- [ ] User workflow works end-to-end
-- [ ] Error handling works as expected
-- [ ] Performance is acceptable
-
-## Integration Verification
-- [ ] API contracts are satisfied
-- [ ] Data flows correctly through system
-- [ ] External dependencies work
-
-## Sign-off
-- **Verified by**: [Name]
-- **Date**: YYYY-MM-DD
-- **Notes**: [Any issues or observations]
+### 2. Error handling
+**Test:** Disconnect network, try to send
+**Expected:** Error message appears, message not lost
+**Check:** Can retry after reconnect?
 ```
 
-### Test Case Template
-```markdown
-# Test Case: [Test Name]
+</human_verification_triggers>
 
-**Requirement**: [Related requirement ID]
-**Description**: [What this test verifies]
+<checkpoint_automation_reference>
 
-## Test Steps
-1. [Step 1]
-2. [Step 2]
-3. [Step 3]
+## Pre-Checkpoint Automation
 
-## Expected Results
-- [Expected outcome 1]
-- [Expected outcome 2]
+For automation-first checkpoint patterns, server lifecycle management, CLI installation handling, and error recovery protocols, see:
 
-## Actual Results
-- [ ] Pass
-- [ ] Fail
-- [ ] Skipped
+**@~/.claude/get-shit-done/references/checkpoints.md** → `<automation_reference>` section
 
-**Notes**: [Any observations]
-```
+Key principles:
+- Claude sets up verification environment BEFORE presenting checkpoints
+- Users never run CLI commands (visit URLs only)
+- Server lifecycle: start before checkpoint, handle port conflicts, keep running for duration
+- CLI installation: auto-install where safe, checkpoint for user choice otherwise
+- Error handling: fix broken environment before checkpoint, never present checkpoint with failed setup
 
-## Summary
-
-Effective verification is critical for delivering quality software. By defining success criteria upfront, using appropriate verification methods, and integrating verification into your workflow, you ensure that what you build matches what was intended.
-
-Remember: Verification isn't just about finding bugs - it's about confirming that you've successfully delivered value to users.
+</checkpoint_automation_reference>
