@@ -80,7 +80,7 @@
 2. **打包技能**：
    运行项目内置的打包脚本，将技能文件打包为可分发的 `.zip` 压缩包：
    ```bash
-   python spec-driven-dev/scripts/package_skill.py
+   python scripts/package_skill.py
    ```
    *打包完成后，你会在项目根目录的 `dist/` 文件夹下看到生成的 `spec-driven-dev_*.zip` 文件。*
 

@@ -20,7 +20,7 @@ class SkillPackager:
         self.skill_name = self.skill_path.name
         
         # Output directory and filename
-        self.output_dir = self.skill_path.parent / "dist"
+        self.output_dir = self.skill_path / "dist"
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.zip_filename = f"{self.skill_name}_{timestamp}.zip"
         self.zip_path = self.output_dir / self.zip_filename
@@ -273,9 +273,14 @@ class SkillPackager:
 
 def main():
     """Command-line entry point."""
-    skill_path = sys.argv[1] if len(sys.argv) > 1 else "."
+    import argparse
+    parser = argparse.ArgumentParser(description="Package a Trae skill into a zip file.")
+    parser.add_argument("skill_dir", nargs="?", default=".", help="Path to the skill directory (default: current directory)")
     
-    packager = SkillPackager(skill_path)
+    args = parser.parse_args()
+    
+    # Run the packager
+    packager = SkillPackager(args.skill_dir)
     success = packager.package()
     
     sys.exit(0 if success else 1)

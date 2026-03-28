@@ -1,0 +1,18 @@
+{
+  "skill_name": "gsd-skill",
+  "version": "1.0.0",
+  "package_date": "2026-03-28T22:00:20.754031",
+  "package_file": "gsd-skill_20260328_220020.zip",
+  "files_included": 13,
+  "description": "Spec-Driven Development Skill - A systematic approach to building software through specification-first development",
+  "author": "Spec-Driven Development Team",
+  "requirements": {
+    "python": ">=3.8",
+    "platform": "any"
+  },
+  "usage": {
+    "initialize_project": "python scripts/init_project.py <project_name>",
+    "validate_project": "python scripts/validate_project.py [project_path]",
+    "documentation": "See SKILL.md for detailed usage instructions"
+  }
+}
