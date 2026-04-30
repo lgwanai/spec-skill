@@ -7,9 +7,23 @@ description: "Comprehensive specification-driven development system for structur
 
 ## Overview
 
-Spec-driven-dev is a structured development system that transforms vague ideas into executable plans through systematic questioning, research, planning, and verification. Inspired by get-shit-done, it provides templates and workflows for managing software projects from conception to completion.
+Spec-driven-dev is a structured development system that transforms vague ideas into executable plans through systematic questioning, research, planning, and verification. Inspired by get-shit-done (GSD), it provides templates and workflows for managing software projects from conception to completion.
 
 **CRITICAL RULE**: You must **STOP and WAIT** for user confirmation at specific checkpoints. Do not rush from planning to execution in a single turn.
+
+## Configuration
+
+Project settings are stored in `.planning/config.json`. Key settings:
+
+| Setting | Options | Default | Purpose |
+|---------|---------|---------|---------|
+| `mode` | `interactive`, `yolo` | `interactive` | Confirm vs auto-approve at each step |
+| `granularity` | `coarse`, `standard`, `fine` | `standard` | Phase granularity (3-5 / 5-8 / 8-12 phases) |
+| `workflow.discuss_mode` | `discuss`, `assumptions` | `discuss` | Interview vs codebase-first discovery |
+| `workflow.research` | boolean | `true` | Research domain before planning |
+| `parallelization.enabled` | boolean | `true` | Run independent plans simultaneously |
+
+See `templates/config.json` for the full schema with all workflow toggles, gates, safety settings, and parallelization controls.
 
 ## Core Workflow
 
@@ -89,109 +103,83 @@ Create the detailed execution plan for the current phase, but **do not execute y
 
 ### 6. Phase Execution
 **Only proceed here after user confirmation of the PLAN.**
-Execute the **approved** plan step-by-step:
+Execute the **approved** plan step-by-step.
+
+**Resources**:
+- Refer to `workflows/execute-plan.md` for the complete execution workflow including pre-execution checks, task execution order, verification rules, atomic commit strategy, and error recovery.
+- Refer to `templates/continue-here.md` for session handoff when pausing mid-execution.
 
 **Plan components:**
-- **Tasks**: Specific, actionable implementation steps
-- **Dependencies**: Plan-to-plan dependency graphs
-- **Verification**: Executing the defined verification steps
-- **Checkpoints**: User interaction points when needed
+- **Tasks**: Specific, actionable implementation steps with concrete values
+- **Dependencies**: Plan-to-plan dependency graphs managed via wave groups
+- **Waves**: Parallel execution groups — independent plans run together
+- **Verification**: Executing the defined verification and acceptance criteria
+- **Checkpoints**: User interaction points (decisions, visual verification)
+- **user_setup**: External service configuration the user must complete
 
 ### 7. Verification & Summary
 Ensure quality and document outcomes:
 
 **Resources**:
+- Refer to `workflows/verify-work.md` for the complete verification workflow: automated checks, must-haves verification, UAT generation, and gap handling.
+- Refer to `workflows/transition.md` for phase completion and transition to the next phase.
+- Refer to `workflows/health.md` for planning directory integrity checks and auto-repair.
 - Refer to `references/verification-patterns.md` for verification types and workflows.
+- Refer to `templates/verification-report.md` for the verification report template.
+- Refer to `templates/UAT.md` for user acceptance testing documentation.
 
 **Verification types:**
 - **Automated**: Tests, linting, build checks
-- **Manual**: User verification of UI/UX
+- **Manual**: User verification of UI/UX via checkpoint tasks
+- **Must-Haves**: Goal-backward verification (truths, artifacts, key_links)
 - **Integration**: System integration testing
 - **Documentation**: Update project context
 
+After verification, refer to `workflows/transition.md` for the phase completion checklist and preparation for the next phase.
+
 ## Templates & Patterns
 
+All templates are in the `templates/` directory. See `templates/README.md` for the canonical artifact registry — the authoritative index of all `.planning/` artifacts.
+
+### Core Planning Templates
+- `templates/PROJECT.md` — Project vision, requirements, constraints, key decisions
+- `templates/ROADMAP.md` — Phase decomposition with success criteria and progress tracking
+- `templates/STATE.md` — Cross-session memory: position, decisions, blockers, performance
+- `templates/REQUIREMENTS.md` — Scoped functional requirements with traceability
+- `templates/config.json` — Workflow configuration (gates, parallelization, quality settings)
+
+### Phase Execution Templates
+- `templates/PLAN.md` — Executable phase plan with XML task structure, must_haves, user_setup
+- `templates/SUMMARY.md` — Post-execution summary with frontmatter for context assembly
+- `templates/discovery.md` — Phase discussion decisions and context capture
+- `templates/VALIDATION.md` — Validation architecture with Given/When/Then scenarios
+- `templates/UAT.md` — User acceptance testing results with issue tracking
+- `templates/verification-report.md` — Post-execution verification against must_haves
+- `templates/continue-here.md` — Session handoff for paused work
+
+### Brownfield Analysis Templates
+- `templates/codebase/structure.md` — Directory organization and key modules
+- `templates/codebase/architecture.md` — Design patterns and component relationships
+- `templates/codebase/stack.md` — Technology stack with versions
+- `templates/codebase/conventions.md` — Coding conventions and patterns
+- `templates/codebase/integrations.md` — External services and dependencies
+- `templates/codebase/testing.md` — Testing approach and coverage
+- `templates/codebase/concerns.md` — Known issues and technical debt
+
+### Workflow Documentation
+- `workflows/execute-plan.md` — Step-by-step plan execution with verification and error recovery
+- `workflows/verify-work.md` — Phase completion verification including must_haves checking
+- `workflows/transition.md` — Phase completion, context updates, and next phase preparation
+- `workflows/health.md` — Planning directory integrity validation and auto-repair
+
 ### Project Template (PROJECT.md)
-```markdown
-# [Project Name]
-
-## What This Is
-[Current accurate description — 2-3 sentences. What does this product do and who is it for?]
-
-## Core Value
-[The ONE thing that matters most. If everything else fails, this must work.]
-
-## Requirements
-### Validated
-(None yet — ship to validate)
-
-### Active
-- [ ] [Requirement 1]
-- [ ] [Requirement 2]
-
-### Out of Scope
-- [Exclusion 1] — [why]
-- [Exclusion 2] — [why]
-
-## Context
-[Background information that informs implementation]
-```
+See `templates/PROJECT.md` for the full template with guidelines, evolution rules, and brownfield support.
 
 ### Phase Plan Template (PLAN.md)
-```markdown
----
-phase: XX-name
-plan: NN
-type: execute
-wave: N
-depends_on: []
-files_modified: []
-autonomous: true
-requirements: []
-must_haves:
-  truths: []
-  artifacts: []
-  key_links: []
----
-
-<objective>
-[What this plan accomplishes]
-Purpose: [Why this matters]
-Output: [What artifacts will be created]
-</objective>
-
-<tasks>
-<task type="auto">
-  <name>Task 1: [Action-oriented name]</name>
-  <files>path/to/file.ext</files>
-  <read_first>path/to/reference.ext</read_first>
-  <action>[Specific implementation - what to do, how to do it, with CONCRETE values]</action>
-  <verify>[Command or check to prove it worked]</verify>
-  <acceptance_criteria>
-    - [Grep-verifiable condition]
-  </acceptance_criteria>
-  <done>[Measurable acceptance criteria]</done>
-</task>
-</tasks>
-```
+See `templates/PLAN.md` for the full template with frontmatter fields, XML task structure, must_haves verification, user_setup for external services, TDD plans, and parallel execution patterns.
 
 ### Roadmap Template (ROADMAP.md)
-```markdown
-# Roadmap: [Project Name]
-
-## Phases
-- [ ] **Phase 1: [Name]** - [One-line description]
-- [ ] **Phase 2: [Name]** - [One-line description]
-
-### Phase 1: [Name]
-**Goal**: [What this phase delivers]
-**Depends on**: Nothing (first phase)
-**Requirements**: [REQ-01, REQ-02]
-**Success Criteria** (what must be TRUE):
-  1. [Observable behavior from user perspective]
-  2. [Observable behavior from user perspective]
-**Plans**: [Number of plans, e.g., "3 plans" or "TBD"]
-```
+See `templates/ROADMAP.md` for the full template with phase numbering, decimal insertions, milestone grouping, and progress tracking.
 
 ## Implementation Examples
 
@@ -226,25 +214,29 @@ Workflow:
 ## Best Practices
 
 ### 1. Context Management
-- **Discuss before planning**: Ensure alignment on requirements
+- **Discuss before planning**: Ensure alignment on requirements via `workflows/transition.md` and `templates/discovery.md`
 - **Confirm before executing**: User must approve the plan
 - **Keep STATE.md updated** with all key decisions
-- **Use SUMMARY.md** for each completed plan
-- **Reference dependencies** explicitly in phase plans
+- **Use SUMMARY.md** for each completed plan with full frontmatter for automatic context assembly
+- **Reference dependencies** explicitly in phase plans via `depends_on` and `wave` fields
 - **Maintain clean separation** between planning and execution
+- **Session continuity**: Use `templates/continue-here.md` when pausing mid-work
 
 ### 2. Verification Strategy
-- **Goal-backward verification**: Define `must_haves` (truths, artifacts, key_links) in the plan frontmatter before implementation
+- **Goal-backward verification**: Define `must_haves` (truths, artifacts, key_links) in the plan frontmatter before implementation. See `templates/PLAN.md` for the full structure.
 - **Task-level verification**: Define grep-verifiable `acceptance_criteria` for each `<task>`
-- **Automated checks**: Tests, linting, type checking
-- **User verification**: Checkpoints for UI/UX validation
+- **Automated checks**: Tests, linting, type checking — see `workflows/verify-work.md`
+- **User verification**: Checkpoints for UI/UX validation via `checkpoint:human-verify` tasks
 - **Integration testing**: End-to-end workflow validation
+- **Verification reporting**: Use `templates/verification-report.md` to document results
 
 ### 3. Phase Design
-- **Small, focused phases**: 2-3 plans per phase
-- **Clear dependencies**: Explicit phase-to-phase dependencies
-- **Measurable outcomes**: Each phase delivers testable functionality
+- **Small, focused phases**: 2-3 plans per phase (~50% context max per plan)
+- **Clear dependencies**: Explicit phase-to-phase and plan-to-plan dependencies via wave groups
+- **Measurable outcomes**: Each phase delivers testable functionality with success criteria
 - **Progressive disclosure**: Build complexity gradually
+- **Parallel execution**: Independent plans run in same wave — see `templates/PLAN.md` for parallel patterns
+- **External services**: Declare in `user_setup` frontmatter — AI can't create API keys or configure dashboards
 
 ## Resources
 
@@ -266,7 +258,16 @@ Executable code (Python/Bash/etc.) that can be run directly to perform specific 
 
 **Appropriate for:** Python scripts, shell scripts, or any executable code that performs automation, data processing, or specific operations.
 
-**Note:** Scripts may be executed without loading into context, but can still be read by Claude for patching or environment adjustments.
+**Note:** Scripts may be executed without loading into context, but can still be read for patching or environment adjustments.
+
+### workflows/
+Step-by-step workflow documentation for each phase of the spec-driven process. Load these into context when executing specific workflows.
+
+**Workflows in this skill:**
+- `workflows/execute-plan.md` — Task execution, atomic commits, verification, error recovery
+- `workflows/verify-work.md` — Must-haves verification, UAT, gap handling
+- `workflows/transition.md` — Phase completion, context updates, next phase preparation
+- `workflows/health.md` — Directory integrity validation and auto-repair
 
 ### references/
 Documentation and reference material intended to be loaded into context to inform Claude's process and thinking.
