@@ -45,6 +45,19 @@
 
 ---
 
+## 🆕 v1.2 更新（同步 get-shit-done v1.37+）
+
+继续与上游 GSD v1.37+ 对齐，本次同步聚焦"去耦 + 调试/验证增强"：
+
+- **8 个新 references**：`checkpoints.md`（checkpoint 协议与自动化原则）、`common-bug-patterns.md`（跨技术栈 bug 分类法）、`debugger-philosophy.md`（调试纪律：用户=报告者，Claude=调查者）、`thinking-models-debug.md`（结构化推理模型：Fault Tree/Hypothesis-Driven）、`domain-probes.md`（按技术领域的深度追问）、`ai-evals.md`（AI 产品评估方法论）、`tdd.md`（TDD 哲学与决策清单）、`user-story-template.md`（用户故事三槽位模板）
+- **6 个新 templates**：`SECURITY.md`（STRIDE 威胁建模）、`DEBUG.md`（调试会话追踪）、`retrospective.md`（阶段回顾）、`user-profile.md`（开发者偏好画像）、`user-setup.md`（人工配置清单）、`research.md`（技术调研：来源优先级/置信度分级）
+- **commands 新 flags**：`spec-quick`（`--discuss`/`--full`/`--validate`/`--research` + `list`/`status`/`resume` 子命令）、`spec-execute`（`--wave N`/`--gaps-only`/`--interactive`）、`spec-health`（`--context`）、`spec-plan`（`--prd <file>`/`--mvp`/`--gaps`）
+- **workflows 4 个去耦合并改进**：`execute-plan`（原子关闭不变量等 10 项）、`health`（error_codes 表 + W009/W019）、`transition`（verification debt + partial_completion）、`verify-work`（UAT 大幅增强：五态 + 严重度推断 + cold-start smoke test）
+- **templates 修改**：`verification-report`（三态验证 ✓/✗/? + Anti-Patterns Found）、`UAT`（五态模型 pending/pass/issue/skipped/blocked + 严重度推断）、`STATE`（Deferred Items 表）、`config.json`（新增 `ship.pr_body_sections` / `git.create_tag`）
+- **去耦原则**：所有内容去 GSD 化（`/gsd-`→`/spec-`、无子代理、无外部路径、无 gsd-sdk/state-lock/surface/worktree）
+
+---
+
 ## 🧠 核心机制：上下文工程 (Context Engineering)
 
 强大的 AI 必须要有正确的上下文。大多数人没有做到这一点，而 `spec-skill` 会为你自动管理。
@@ -114,7 +127,7 @@
 spec-skill/
 ├── SKILL.md                  # 技能定义与核心工作流
 ├── README.md                 # 本文件
-├── templates/                # 文档模板（20 个文件）
+├── templates/                # 文档模板（26 个文件）
 │   ├── README.md             # 规范制品注册表（权威索引）
 │   ├── PROJECT.md            # 项目愿景模板
 │   ├── DOMAIN.md             # 领域概念模板 ★ 新增
@@ -130,6 +143,12 @@ spec-skill/
 │   ├── UAT.md                # 用户验收模板 ★ 新增
 │   ├── continue-here.md      # 会话交接模板 ★ 新增
 │   ├── verification-report.md # 验证报告模板 ★ 新增
+│   ├── SECURITY.md           # STRIDE 威胁建模模板 ★ v1.2 新增
+│   ├── DEBUG.md              # 调试会话追踪模板 ★ v1.2 新增
+│   ├── retrospective.md      # 阶段回顾模板 ★ v1.2 新增
+│   ├── user-profile.md       # 开发者偏好画像模板 ★ v1.2 新增
+│   ├── user-setup.md         # 人工配置清单模板 ★ v1.2 新增
+│   ├── research.md           # 技术调研模板（来源优先级/置信度分级）★ v1.2 新增
 │   └── codebase/             # 存量项目分析模板 ★ 新增
 │       ├── structure.md      # 目录结构与模块
 │       ├── architecture.md   # 架构模式与组件关系
@@ -143,9 +162,17 @@ spec-skill/
 │   ├── verify-work.md        # 阶段验证（含 must_haves 检查、UAT）
 │   ├── transition.md         # 阶段转换（含上下文更新、下一阶段准备）
 │   └── health.md             # 健康检查（含完整性验证、自动修复）
-├── references/               # 参考文档
+├── references/               # 参考文档（2 → 10）★ v1.2 扩充
 │   ├── questioning.md        # 提问策略与心理模型
-│   └── verification-patterns.md # 验证模式与工作流
+│   ├── verification-patterns.md # 验证模式与工作流
+│   ├── checkpoints.md        # Checkpoint 协议与自动化原则 ★ v1.2 新增
+│   ├── common-bug-patterns.md # 跨技术栈 bug 分类法 ★ v1.2 新增
+│   ├── debugger-philosophy.md # 调试纪律（用户=报告者，Claude=调查者）★ v1.2 新增
+│   ├── thinking-models-debug.md # 结构化推理模型（Fault Tree/Hypothesis-Driven）★ v1.2 新增
+│   ├── domain-probes.md      # 按技术领域的深度追问 ★ v1.2 新增
+│   ├── ai-evals.md           # AI 产品评估方法论 ★ v1.2 新增
+│   ├── tdd.md                # TDD 哲学与决策清单 ★ v1.2 新增
+│   └── user-story-template.md # 用户故事三槽位模板 ★ v1.2 新增
 └── scripts/                  # 自动化脚本
     ├── init_project.py       # 项目初始化
     ├── validate_project.py   # 项目校验
