@@ -13,6 +13,8 @@ These files live directly at `.planning/` — not inside phase subdirectories.
 | File | Template | Produced by | Purpose |
 |------|----------|-------------|---------|
 | `PROJECT.md` | `PROJECT.md` | Project init | Project identity, goals, requirements summary |
+| `DOMAIN.md` | `DOMAIN.md` | Project init | Domain concepts, attributes, relationships, lifecycles, and invariants when people interact with the system |
+| `USE_CASES.md` | `USE_CASES.md` | Project init | Actors, roles, role-to-domain operations, derived access rules, and use-case traceability when people interact with the system |
 | `ROADMAP.md` | `ROADMAP.md` | Roadmap planning | Phase plan with milestones and progress tracking |
 | `STATE.md` | `STATE.md` | Project init, transitions | Current session state, active phase, last activity |
 | `REQUIREMENTS.md` | `requirements.md` | New milestone | Functional requirements with traceability |
@@ -98,3 +100,22 @@ When a new workflow produces a `.planning/` file:
 2. Add the template to `templates/` if one exists
 3. Update the validation tool's canonical file list
 4. Document the producing workflow in the relevant workflow doc
+
+---
+
+## Trace Validation
+
+`scripts/validate_trace.py` validates the machine-checkable trace from domain/use-case artifacts into executable plans:
+
+- PLAN `requirements` must exist in `REQUIREMENTS.md`
+- PLAN `domain_trace.use_cases` must exist in `USE_CASES.md`
+- PLAN `domain_trace.actors` must exist in `USE_CASES.md`
+- PLAN `domain_trace.concepts` should exist in `DOMAIN.md`
+- Human-interaction plans must include task-level `<domain_trace>`
+- Derived access rules must start with `allowed:`, `denied:`, or `unconfirmed:`
+
+Run before executing human-interaction plans:
+
+```bash
+python scripts/validate_trace.py .
+```

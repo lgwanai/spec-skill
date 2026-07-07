@@ -117,12 +117,13 @@ Artifact content (plan descriptions, task titles) is rendered as plain text only
 ## Workflow (run mode, default)
 
 1. **Understand** — Quick clarification of the task (1-2 questions max)
-2. **Discuss** *(if `--discuss` or `--full`)* — Surface assumptions, capture in CONTEXT.md
-3. **Research** *(if `--research` or `--full`)* — Investigate approaches, libraries, pitfalls
-4. **Plan** — Minimal PLAN.md; if `--validate` or `--full`, plan-check (max 2 iterations)
-5. **Execute** — Implement with atomic commits per logical change
-6. **Verify** *(if `--validate` or `--full`)* — Build, type check, lint, test
-7. **Document** — Create SUMMARY.md, update STATE.md "Quick Tasks Completed" table
+2. **Interaction Gate** — If the task adds or changes behavior operated by a person, capture a lightweight domain trace in PLAN.md: actor, use case/operation, domain concept, derived access rule. If the trace is unclear, ask before coding even in quick mode.
+3. **Discuss** *(if `--discuss` or `--full`)* — Surface assumptions, capture in CONTEXT.md
+4. **Research** *(if `--research` or `--full`)* — Investigate approaches, libraries, pitfalls
+5. **Plan** — Minimal PLAN.md; if `--validate` or `--full`, plan-check (max 2 iterations). Human-interaction quick plans still need domain_trace.
+6. **Execute** — Implement with atomic commits per logical change
+7. **Verify** *(if `--validate` or `--full`)* — Build, type check, lint, test. For human-interaction quick tasks, verify actor/use-case/domain behavior and derived access.
+8. **Document** — Create SUMMARY.md, update STATE.md "Quick Tasks Completed" table
 
 ## What You Produce
 
@@ -134,6 +135,7 @@ Artifact content (plan descriptions, task titles) is rendered as plain text only
 ## Key Rules
 
 - Skip research, plan checker, and verifier by default (unless flags set)
+- Do not skip the interaction gate for human-operated product behavior
 - Still create atomic commits per logical change
 - Still update STATE.md "Quick Tasks Completed" table (NOT ROADMAP.md)
 - Keeps `.planning/quick/` separate from phase directories

@@ -26,6 +26,8 @@ class ProjectInitializer:
         # Required files and their destinations
         self.required_files = {
             "PROJECT.md": self.planning_dir / "PROJECT.md",
+            "DOMAIN.md": self.planning_dir / "DOMAIN.md",
+            "USE_CASES.md": self.planning_dir / "USE_CASES.md",
             "ROADMAP.md": self.planning_dir / "ROADMAP.md",
             "REQUIREMENTS.md": self.planning_dir / "REQUIREMENTS.md",
             "STATE.md": self.planning_dir / "STATE.md",
@@ -101,6 +103,10 @@ class ProjectInitializer:
             # Replace placeholders for specific files
             if template_name == "PROJECT.md":
                 content = content.replace("[Project Name]", self.project_name)
+            elif template_name == "DOMAIN.md":
+                content = content.replace("[Project Name]", self.project_name)
+            elif template_name == "USE_CASES.md":
+                content = content.replace("[Project Name]", self.project_name)
             elif template_name == "ROADMAP.md":
                 content = content.replace("[Project Name]", self.project_name)
             elif template_name == "STATE.md":
@@ -174,6 +180,8 @@ Spec-Driven Development Project
 {self.project_name}/
 ├── .planning/          # Planning and documentation
 │   ├── PROJECT.md     # Project context and goals
+│   ├── DOMAIN.md      # Domain concepts and vocabulary
+│   ├── USE_CASES.md   # Actors, roles, and use cases
 │   ├── ROADMAP.md     # Phased implementation plan
 │   ├── REQUIREMENTS.md # Detailed requirements
 │   ├── STATE.md       # Project state and decisions
@@ -189,17 +197,19 @@ Spec-Driven Development Project
 ## Getting Started
 
 1. Review the planning documents in `.planning/`
-2. Start with Phase 1: Project Initialization
+2. If people interact with the system, complete `.planning/DOMAIN.md` and `.planning/USE_CASES.md` before roadmap work
+3. Start with Phase 1: Project Initialization
 3. Follow the spec-driven development workflow
 
 ## Workflow
 
 This project follows the spec-driven development methodology:
 
-1. **Plan**: Define requirements and create detailed plans
-2. **Execute**: Implement according to specifications
-3. **Verify**: Validate against success criteria
-4. **Document**: Record decisions and outcomes
+1. **Discover**: Define domain concepts, actors, and use cases when humans interact with the system
+2. **Plan**: Define requirements and create detailed plans
+3. **Execute**: Implement according to specifications
+4. **Verify**: Validate against success criteria
+5. **Document**: Record decisions and outcomes
 
 ## Next Steps
 
@@ -259,9 +269,10 @@ This project follows the spec-driven development methodology:
         print(f"📍 Location: {self.project_path}")
         print(f"\n📋 Next steps:")
         print(f"1. Review `.planning/PROJECT.md`")
-        print(f"2. Update `.planning/ROADMAP.md` with your phases")
+        print(f"2. Complete `.planning/DOMAIN.md` and `.planning/USE_CASES.md` when people interact with the system")
         print(f"3. Define requirements in `.planning/REQUIREMENTS.md`")
-        print(f"4. Start with Phase 1: `.planning/phases/01-project-init/01-01-PLAN.md`")
+        print(f"4. Update `.planning/ROADMAP.md` with your phases")
+        print(f"5. Start with Phase 1: `.planning/phases/01-project-init/01-01-PLAN.md`")
         print(f"{'='*50}")
         
         return True

@@ -19,6 +19,12 @@ files_modified: []          # Files this plan modifies.
 autonomous: true            # false if plan has checkpoints requiring user interaction
 requirements: []            # REQUIRED — Requirement IDs from ROADMAP this plan addresses. MUST NOT be empty.
 user_setup: []              # Human-required setup AI cannot automate (external services, API keys, etc.)
+domain_trace:               # Always an object. Empty arrays are allowed only when interaction_gate is not_required.
+  interaction_gate: "not_required"   # required | not_required
+  use_cases: []             # Use case IDs from USE_CASES.md this plan implements.
+  actors: []                # Roles whose behavior is changed by this plan.
+  concepts: []              # Domain concepts/modules/entities touched by this plan.
+  derived_access_rules: []  # Derived access rules with status: allowed | denied | unconfirmed.
 
 # Goal-backward verification (derived during planning, verified after execution)
 must_haves:
@@ -43,6 +49,9 @@ Output: [What artifacts will be created]
 
 <context>
 @.planning/PROJECT.md
+@.planning/DOMAIN.md
+@.planning/USE_CASES.md
+@.planning/REQUIREMENTS.md
 @.planning/ROADMAP.md
 @.planning/STATE.md
 
@@ -59,13 +68,20 @@ Output: [What artifacts will be created]
 
 <task type="auto">
   <name>Task 1: [Action-oriented name]</name>
+  <domain_trace>
+    <actors>[Roles affected, or N/A]</actors>
+    <use_cases>[UC-___ IDs, or N/A]</use_cases>
+    <concepts>[Domain concepts/modules/entities, or N/A]</concepts>
+    <derived_access>[Allowed, denied, and unconfirmed role-operation pairs, or empty for implementation-only work]</derived_access>
+  </domain_trace>
   <files>path/to/file.ext, another/file.ext</files>
   <read_first>path/to/reference.ext, path/to/source-of-truth.ext</read_first>
-  <action>[Specific implementation - what to do, how to do it, what to avoid and WHY. Include CONCRETE values: exact identifiers, parameters, expected outputs, file paths, command arguments. Never say "align X with Y" without specifying the exact target state.]</action>
+  <action>[Specific implementation - what to do, how to do it, what to avoid and WHY. For human-interaction/business work, translate the domain trace into concrete code: data/entity shape, UI/CLI operations, API/service behavior, derived access checks, tests, and error states. Include CONCRETE values: exact identifiers, parameters, expected outputs, file paths, command arguments. Never say "align X with Y" without specifying the exact target state.]</action>
   <verify>[Command or check to prove it worked]</verify>
   <acceptance_criteria>
     - [Grep-verifiable condition: "file.ext contains 'exact string'"]
     - [Measurable condition: "output.ext uses 'expected-value', NOT 'wrong-value'"]
+    - [For business work: evidence that actor/use-case/concept/access behavior is implemented, not just scaffolded]
   </acceptance_criteria>
   <done>[Measurable acceptance criteria]</done>
 </task>
@@ -106,6 +122,8 @@ Before declaring plan complete:
 - [ ] [Specific test command]
 - [ ] [Build/type check passes]
 - [ ] [Behavior verification]
+- [ ] [For human-interaction plans: actor/use-case/domain trace is implemented in code and tests]
+- [ ] [For derived access rules: allowed operations work; denied operations are blocked/absent; unconfirmed operations are not silently implemented]
 </verification>
 
 <success_criteria>
@@ -136,11 +154,19 @@ After completion, create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
 | `autonomous` | Yes | `true` if no checkpoints, `false` if has checkpoints |
 | `requirements` | Yes | **MUST** list requirement IDs from ROADMAP. Every roadmap requirement MUST appear in at least one plan. |
 | `user_setup` | No | Array of human-required setup items (external services, API keys) |
+| `domain_trace` | Yes | Always an object. Required fields: `interaction_gate`, `use_cases`, `actors`, `concepts`, `derived_access_rules`. Arrays may be empty only when `interaction_gate: not_required`. |
 | `must_haves` | Yes | Goal-backward verification criteria (see below) |
 
 **Wave is pre-computed:** Wave numbers are assigned during plan-phase. Execute-phase reads `wave` directly from frontmatter and groups plans by wave number. No runtime dependency analysis needed.
 
 **Must-haves enable verification:** The `must_haves` field carries goal-backward requirements from planning to execution. After all plans complete, execute-phase verifies these criteria against the actual codebase.
+
+**Domain trace drives code generation:** For business systems and any human-operated feature, `domain_trace` is not documentation. It is an implementation contract:
+- Data models/entities must reflect the referenced domain concepts.
+- UI/CLI/API/service flows must implement the referenced use cases.
+- Tests and UAT must use the named actors and outcomes.
+- Derived access rules must include explicit status: `allowed`, `denied`, or `unconfirmed`. Allowed behavior must work; denied behavior must be blocked/absent; unconfirmed behavior must not be silently implemented.
+- If the code cannot express a traced concept/use case cleanly, stop and revise the plan instead of generating generic CRUD.
 
 ---
 
@@ -254,6 +280,21 @@ Wave 3 runs after Waves 1 and 2. Pauses at checkpoint, presents to user, resumes
 **Vertical slices preferred:**
 
 ```
+
+**Business-system vertical slice:**
+
+For human-operated systems, slice by use case whenever possible:
+
+```
+PREFER: Plan 01 = Parent sets word-card scope (entity + service/API + UI + tests)
+        Plan 02 = Student reviews scoped cards (entity state + review flow + tests)
+
+AVOID:  Plan 01 = All word-card tables
+        Plan 02 = All word-card APIs
+        Plan 03 = All word-card screens
+```
+
+This keeps actor behavior, domain model, derived access, and tests together so code generation preserves product meaning.
 PREFER: Plan 01 = User (model + API + UI)
         Plan 02 = Product (model + API + UI)
 
@@ -339,8 +380,8 @@ The `must_haves` field defines what must be TRUE for the phase goal to be achiev
 ```yaml
 must_haves:
   truths:
-    - "User can see existing messages"
-    - "User can send a message"
+    - "Member can see existing messages"
+    - "Member can send a message"
     - "Messages persist across refresh"
   artifacts:
     - path: "src/components/Chat.tsx"
@@ -384,6 +425,8 @@ must_haves:
 
 Task completion ≠ Goal achievement. A task "create chat component" can complete by creating a placeholder. The `must_haves` field captures what must actually work, enabling verification to catch gaps before they compound.
 
+For human-interaction systems, truths must name the actor and use-case outcome. "Cards CRUD exists" is weaker than "Parent can set the deck's review scope; Student scope-setting remains unconfirmed and is not exposed."
+
 **Verification flow:**
 1. Plan-phase derives must_haves from phase goal (goal-backward)
 2. Must_haves written to PLAN.md frontmatter
@@ -415,6 +458,25 @@ depends_on: []
 files_modified: [...]
 # autonomous: ???  <- Missing!
 ```
+
+**Bad: Business feature without domain trace**
+```yaml
+requirements: ["CARD-01"]
+domain_trace:
+  interaction_gate: "required"
+  use_cases: []
+  actors: []
+  concepts: []
+```
+
+This will produce generic code because the executor has no actor, concept, or derived access contract.
+
+**Bad: Permission-first design**
+```xml
+<action>Add RBAC roles parent/student/admin.</action>
+```
+
+No use case says what these roles do. Instead, derive access from role-operation pairs like "Parent can set review scope; Student can review cards."
 
 **Bad: Vague tasks**
 ```xml
@@ -474,10 +536,20 @@ files_modified: [src/features/user/model.ts, src/features/user/api.ts, src/featu
 autonomous: true
 requirements: ["REQ-04", "REQ-05"]
 user_setup: []
+domain_trace:
+  interaction_gate: "required"
+  use_cases: ["UC-001", "UC-002"]
+  actors: ["Visitor", "Member"]
+  concepts: ["Account", "Session", "Profile"]
+  derived_access_rules:
+    - "allowed: Visitor can create Account via signup"
+    - "allowed: Member can view own Profile after login"
+    - "denied: Visitor cannot view member Profile before authentication"
 must_haves:
   truths:
-    - "User can register with email and password"
-    - "User can log in and see their profile"
+    - "Visitor can register with email and password"
+    - "Member can log in and see their own profile"
+    - "Visitor cannot access member profile before authentication"
   artifacts:
     - path: "src/features/user/model.ts"
       provides: "User data model"
@@ -506,6 +578,9 @@ Output: User model, API endpoints, and UI components.
 
 <context>
 @.planning/PROJECT.md
+@.planning/DOMAIN.md
+@.planning/USE_CASES.md
+@.planning/REQUIREMENTS.md
 @.planning/ROADMAP.md
 @.planning/STATE.md
 </context>
@@ -513,10 +588,16 @@ Output: User model, API endpoints, and UI components.
 <tasks>
 <task type="auto">
   <name>Task 1: Create User model</name>
+  <domain_trace>
+    <actors>Visitor, Member</actors>
+    <use_cases>UC-001, UC-002</use_cases>
+    <concepts>Account, Session, Profile</concepts>
+    <derived_access>allowed: Visitor can create Account; allowed: Member can view own Profile; denied: Visitor cannot view member Profile before authentication.</derived_access>
+  </domain_trace>
   <files>src/features/user/model.ts</files>
-  <action>Define User type with id, email, name, createdAt. Export TypeScript interface.</action>
+  <action>Define Account, Session, and Profile types with id, email, displayName, createdAt, and owner account relationship. Export TypeScript interfaces using these domain names or established local equivalents.</action>
   <verify>tsc --noEmit passes</verify>
-  <done>User type exported and usable</done>
+  <done>Account/Profile/Session types exported and usable</done>
 </task>
 
 <task type="auto">

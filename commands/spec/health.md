@@ -1,6 +1,6 @@
 ---
 name: spec-health
-description: "Validate .planning/ directory integrity. Check required files, config schema, phase directory structure, and artifact naming conventions. Auto-repair with --repair, context utilization diagnostic with --context."
+description: "Validate .planning/ directory integrity. Check required files, config schema, phase directory structure, trace consistency, and artifact naming conventions. Auto-repair with --repair, context utilization diagnostic with --context."
 argument-hint: "[--repair] [--context]"
 ---
 
@@ -18,6 +18,7 @@ See `workflows/health.md` for the complete health check procedure.
 4. **Phase Integrity** — Check naming conventions, cross-reference with ROADMAP
 5. **Artifact Naming** — Verify PLAN.md, SUMMARY.md follow `NN-MM-NAME.md` convention
 6. **Cross-Reference** — ROADMAP ↔ Phases, ROADMAP ↔ Requirements, Plans ↔ Requirements
+7. **Trace Validation** — Run `scripts/validate_trace.py` when available to validate DOMAIN/USE_CASES/REQUIREMENTS → PLAN domain_trace consistency
 
 ## Auto-Repair (`--repair`)
 
@@ -55,4 +56,5 @@ Health report with:
 - Template-created files include `<!-- AUTO-GENERATED -->` header
 - Phase directories with no plans or summaries → warning only
 - config.json with invalid types → reset to defaults
+- Trace validation errors block human-interaction plan execution
 - `--context` is read-only; it never writes or repairs files

@@ -11,6 +11,14 @@ Template for `.planning/ROADMAP.md`.
 
 [One paragraph describing the journey from start to finish]
 
+## Planning Inputs
+
+- **Domain model:** `.planning/DOMAIN.md` ([Required / Not required])
+- **Use cases:** `.planning/USE_CASES.md` ([Required / Not required])
+- **Requirements:** `.planning/REQUIREMENTS.md`
+
+Roadmap phases continue the same chain: Domain Concept -> Use Case -> Requirement -> Phase -> PLAN must_haves -> UAT. Do not introduce user-facing phase work that has no actor, use case, or domain concept when the interaction gate is required.
+
 ## Phases
 
 **Phase Numbering:**
@@ -30,10 +38,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Goal**: [What this phase delivers]
 **Depends on**: Nothing (first phase)
 **Requirements**: [REQ-01, REQ-02, REQ-03]  <!-- brackets optional, parser handles both formats -->
+**Use Cases**: [UC-001, UC-002]  <!-- N/A for implementation-only phases -->
+**Domain Concepts**: [Concept A, Concept B]
 **Success Criteria** (what must be TRUE):
-  1. [Observable behavior from user perspective]
-  2. [Observable behavior from user perspective]
-  3. [Observable behavior from user perspective]
+  1. [Actor/Role] can [operation] [domain concept] and [observable outcome]
+  2. [Actor/Role] can [operation] [domain concept] and [observable outcome]
+  3. [Observable technical behavior for implementation-only work, if any]
 **Plans**: [Number of plans, e.g., "3 plans" or "TBD"]
 
 Plans:
@@ -45,9 +55,11 @@ Plans:
 **Goal**: [What this phase delivers]
 **Depends on**: Phase 1
 **Requirements**: [REQ-04, REQ-05]
+**Use Cases**: [UC-003]
+**Domain Concepts**: [Concept C]
 **Success Criteria** (what must be TRUE):
-  1. [Observable behavior from user perspective]
-  2. [Observable behavior from user perspective]
+  1. [Actor/Role] can [operation] [domain concept] and [observable outcome]
+  2. [Actor/Role] can [operation] [domain concept] and [observable outcome]
 **Plans**: [Number of plans]
 
 Plans:
@@ -68,10 +80,12 @@ Plans:
 **Goal**: [What this phase delivers]
 **Depends on**: Phase 2
 **Requirements**: [REQ-06, REQ-07, REQ-08]
+**Use Cases**: [UC-004, UC-005]
+**Domain Concepts**: [Concept D, Concept E]
 **Success Criteria** (what must be TRUE):
-  1. [Observable behavior from user perspective]
-  2. [Observable behavior from user perspective]
-  3. [Observable behavior from user perspective]
+  1. [Actor/Role] can [operation] [domain concept] and [observable outcome]
+  2. [Actor/Role] can [operation] [domain concept] and [observable outcome]
+  3. [Observable technical behavior for implementation-only work, if any]
 **Plans**: [Number of plans]
 
 Plans:
@@ -82,9 +96,11 @@ Plans:
 **Goal**: [What this phase delivers]
 **Depends on**: Phase 3
 **Requirements**: [REQ-09, REQ-10]
+**Use Cases**: [UC-006]
+**Domain Concepts**: [Concept F]
 **Success Criteria** (what must be TRUE):
-  1. [Observable behavior from user perspective]
-  2. [Observable behavior from user perspective]
+  1. [Actor/Role] can [operation] [domain concept] and [observable outcome]
+  2. [Actor/Role] can [operation] [domain concept] and [observable outcome]
 **Plans**: [Number of plans]
 
 Plans:
@@ -114,11 +130,19 @@ Phases execute in numeric order: 2 → 2.1 → 2.2 → 3 → 3.1 → 4
 - Plan count can be "TBD" initially, refined during planning
 
 **Success criteria:**
-- 2-5 observable behaviors per phase (from user's perspective)
+- 2-5 observable behaviors per phase
+- For human-interaction phases, write criteria as role + operation + domain concept + outcome
+- For implementation-only phases, `Use Cases` may be `N/A`, but success criteria must explain the observable technical result
 - Cross-checked against requirements during roadmap creation
 - Flow downstream to `must_haves` in plan-phase
 - Verified by verify-phase after execution
-- Format: "User can [action]" or "[Thing] works/exists"
+- Format for human-interaction phases: "[Actor/Role] can [operation] [domain concept] and [observable outcome]"
+- Format for implementation-only phases: "[Technical capability] works/exists and [observable verification]"
+
+**Use-case traceability:**
+- If DOMAIN.md/USE_CASES.md are required, every user-facing phase should cite the relevant use cases and concepts
+- If a phase adds no human-facing behavior, explicitly set `Use Cases: N/A` rather than inventing actors
+- Access behavior comes from use cases. Roadmap phases may implement access checks, but should not invent a permission model disconnected from actor operations
 
 **After milestones ship:**
 - Collapse completed milestones in `<details>` tags

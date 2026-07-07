@@ -32,10 +32,12 @@ awaiting: user response
 
 ### 1. [Test Name]
 expected: [observable behavior - what user should see]
+trace: [Actor] / [UC-___] / [Domain Concept] / [REQ-___]
 result: [pending]
 
 ### 2. [Test Name]
 expected: [observable behavior]
+trace: [Actor] / [UC-___] / [Domain Concept] / [REQ-___]
 result: pass
 
 ### 3. [Test Name]
@@ -106,6 +108,11 @@ reason: [why blocked]
 - After automated verification passes
 - Before declaring the phase complete
 
+**Human-interaction source of truth:**
+- Build UAT tests from USE_CASES.md, REQUIREMENTS.md, and PLAN `domain_trace`, not only from SUMMARY.md prose.
+- Each user-facing test should name the actor, use case, domain concept, and expected outcome.
+- Include derived access checks when they affect user-visible behavior: allowed actor can complete the operation; denied actor is blocked; unconfirmed operation is not exposed or silently implemented.
+
 **Test result values:**
 - `pending` — Not yet tested
 - `pass` — Works as expected
@@ -134,6 +141,8 @@ Default: **major** (safe default, user can clarify if wrong)
 
 **UAT philosophy:**
 Show expected behavior, ask if reality matches. "yes"/"y"/"next"/empty → pass; anything else → issue. Don't ask Pass/Fail buttons; don't ask severity — infer it from the user's words.
+
+For business systems, show the expected behavior in role language: "Parent can set the selected word-card range; Student scope-setting is unconfirmed and is not exposed in v1." Avoid generic "feature works" tests.
 
 **Fix plans:**
 - Critical and High issues should generate new fix plans

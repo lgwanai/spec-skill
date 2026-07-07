@@ -9,6 +9,7 @@ structure and contains all required files.
 import os
 import json
 import sys
+import subprocess
 from pathlib import Path
 from typing import List, Dict, Tuple
 
@@ -24,6 +25,14 @@ class ProjectValidator:
             "REQUIREMENTS.md": "Detailed requirements",
             "STATE.md": "Project state and decisions",
             "config.json": "Project configuration",
+        }
+
+        # Canonical but migration-friendly files. Missing files should warn,
+        # not fail, so existing spec-skill projects can adopt the new flow
+        # incrementally.
+        self.recommended_files = {
+            "DOMAIN.md": "Domain concepts and vocabulary",
+            "USE_CASES.md": "Actors, roles, and use cases",
         }
         
         # Required directories
@@ -78,6 +87,37 @@ class ProjectValidator:
         elif empty:
             self.warnings.append(f"Empty file: {path.relative_to(self.project_path)} - {description}")
         
+        return exists and not empty
+
+    def check_recommended_file_exists(self, path: Path, description: str) -> bool:
+        """Check recommended canonical files without failing old projects."""
+        exists = path.exists() and path.is_file()
+        empty = exists and path.stat().st_size == 0
+
+        status = "✅"
+        if not exists:
+            status = "⚠️"
+        elif empty:
+            status = "⚠️"
+
+        self.results.append({
+            "type": "file",
+            "name": str(path.relative_to(self.project_path)),
+            "description": f"{description} (recommended)",
+            "status": status,
+            "exists": exists,
+            "empty": empty,
+            "recommended": True,
+        })
+
+        if not exists:
+            self.warnings.append(
+                f"Recommended file missing: {path.relative_to(self.project_path)} - {description}. "
+                "Create it when the project or phase involves human interaction."
+            )
+        elif empty:
+            self.warnings.append(f"Empty recommended file: {path.relative_to(self.project_path)} - {description}")
+
         return exists and not empty
     
     def check_file_content(self, path: Path, expected_keywords: List[str] = None) -> bool:
@@ -173,6 +213,38 @@ class ProjectValidator:
                 self.warnings.append(f"Phase '{phase_name}' has no summary files")
         
         return True
+
+    def check_trace_validation(self) -> bool:
+        """Run trace validation when the script is available."""
+        trace_script = Path(__file__).parent / "validate_trace.py"
+        if not trace_script.exists():
+            self.warnings.append("Trace validator not found: scripts/validate_trace.py")
+            return True
+
+        try:
+            result = subprocess.run(
+                [sys.executable, str(trace_script), str(self.project_path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        except Exception as e:
+            self.warnings.append(f"Failed to run trace validator: {e}")
+            return True
+
+        if result.returncode != 0:
+            self.errors.append(
+                "Trace validation failed. Run `python scripts/validate_trace.py .` for details.\n"
+                + result.stdout.strip()
+            )
+            return False
+
+        if "WARNINGS" in result.stdout:
+            self.warnings.append(
+                "Trace validation passed with warnings. Run `python scripts/validate_trace.py .` for details."
+            )
+
+        return True
     
     def validate(self) -> bool:
         """Main validation method."""
@@ -188,13 +260,29 @@ class ProjectValidator:
         for filename, description in self.required_files.items():
             file_path = self.planning_dir / filename
             self.check_file_exists(file_path, description)
+
+        # Check recommended canonical files without blocking migration
+        print("\n📄 Checking recommended files...")
+        for filename, description in self.recommended_files.items():
+            file_path = self.planning_dir / filename
+            self.check_recommended_file_exists(file_path, description)
         
         # Check file contents
         print("\n📝 Checking file contents...")
         
         # Check PROJECT.md for placeholders
         project_path = self.planning_dir / "PROJECT.md"
-        self.check_file_content(project_path, ["[Project Name]", "## What This Is"])
+        self.check_file_content(project_path, ["## What This Is", "## Core Value", "## Requirements"])
+
+        # Check DOMAIN.md for interaction gate and core concept structure
+        domain_path = self.planning_dir / "DOMAIN.md"
+        if domain_path.exists():
+            self.check_file_content(domain_path, ["# Domain Model:", "## Core Concepts", "Interaction Gate"])
+
+        # Check USE_CASES.md for actor/use-case structure
+        use_cases_path = self.planning_dir / "USE_CASES.md"
+        if use_cases_path.exists():
+            self.check_file_content(use_cases_path, ["# Use Cases:", "## Actors and Roles", "## Use Case Matrix"])
         
         # Check ROADMAP.md for placeholders
         roadmap_path = self.planning_dir / "ROADMAP.md"
@@ -208,6 +296,10 @@ class ProjectValidator:
         # Check phases structure
         print("\n📈 Checking phases structure...")
         self.check_phases_structure()
+
+        # Check trace consistency
+        print("\n🔗 Checking trace consistency...")
+        self.check_trace_validation()
         
         # Check required directories
         print("\n📁 Checking directory structure...")

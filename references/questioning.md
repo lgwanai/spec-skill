@@ -17,6 +17,8 @@ Don't interrogate. Collaborate. Don't follow a script. Follow the thread.
 By the end of questioning, you need enough clarity to write a PROJECT.md that downstream phases can act on:
 
 - **Research** needs: what domain to research, what the user already knows, what unknowns exist
+- **Domain modeling** needs: whether people interact with the system, what the important concepts mean, and which terms are ambiguous
+- **Use-case modeling** needs: who the actors/roles are and what operations each role performs on domain concepts
 - **Requirements** needs: clear enough vision to scope v1 features
 - **Roadmap** needs: clear enough vision to decompose into phases, what "done" looks like
 - **plan-phase** needs: specific requirements to break into tasks, context for implementation choices
@@ -35,6 +37,16 @@ A vague PROJECT.md forces every downstream phase to guess. The cost compounds.
 **Challenge vagueness.** Never accept fuzzy answers. "Good" means what? "Users" means who? "Simple" means how?
 
 **Make the abstract concrete.** "Walk me through using this." "What does that actually look like?"
+
+**When people interact, model people and things before features.** If the system has UI, app, dashboard, human-facing CLI, roles, role-specific behavior, or business workflow, clarify:
+- What are the domain concepts?
+- Who are the actors/roles?
+- What can each role do to each concept?
+- What changes in the domain after that operation?
+
+**When the user says "add/build a feature", infer whether a person operates it.** Users often phrase product work as "add X" or "make a system for Y." If X is viewed, configured, reviewed, practiced, purchased, searched, managed, approved, or edited by a person, activate the human-interaction gate even if the user did not mention roles.
+
+**Keep the chain continuous.** Domain concepts and use cases are not a separate planning ceremony. They become requirement IDs, roadmap success criteria, PLAN must_haves, and UAT scenarios.
 
 **Clarify ambiguity.** "When you say Z, do you mean A or B?" "You mentioned X — tell me more."
 
@@ -55,6 +67,27 @@ Use these as inspiration, not a checklist. Pick what's relevant to the thread.
 - "Walk me through using this"
 - "You said X — what does that actually look like?"
 - "Give me an example"
+
+**Domain concepts — what the nouns mean:**
+- "When you say [thing], what exactly is it in this product?"
+- "What attributes does [thing] need to have?"
+- "What is in scope for [thing], and what should it definitely not mean?"
+- "Does [thing] have states or a lifecycle?"
+- "What is the larger module/entity this belongs to?"
+- "Do we need to split [thing] further now, or can it stay coarse until a later phase?"
+
+**Actors and roles — who touches the system:**
+- "Who will use this directly?"
+- "Are there different roles, or is it only for you?"
+- "Can those roles do different things?"
+- "Who owns, creates, reviews, or manages [concept]?"
+
+**Use cases — how people operate on concepts:**
+- "What does [role] need to do with [concept]?"
+- "What should change after [role] does that?"
+- "What can [role] see but not edit?"
+- "Which operations are v1, and which are later?"
+- "If [role] was not mentioned for this operation, should they be unable to do it?"
 
 **Clarification — what they mean:**
 - "When you say Z, do you mean A or B?"
@@ -125,8 +158,11 @@ Use this as a **background checklist**, not a conversation structure. Check thes
 - [ ] Why it needs to exist (the problem or desire driving it)
 - [ ] Who it's for (even if just themselves)
 - [ ] What "done" looks like (observable outcomes)
+- [ ] Whether people interact with the system
+- [ ] If people interact: the key domain concepts and their boundaries
+- [ ] If people interact: actors/roles and role-specific operations on concepts
 
-Four things. If they volunteer more, capture it.
+Do not force the last three items for pure libraries, internal refactors, infrastructure, CI/build work, or machine-only jobs. If people are involved, these are not optional.
 
 </context_checklist>
 
@@ -145,6 +181,38 @@ If "Keep exploring" — ask what they want to add or identify gaps and probe nat
 Loop until "Create PROJECT.md" selected.
 
 </decision_gate>
+
+<human_interaction_gate>
+
+Use this gate before requirements and roadmap planning.
+
+**Required when the project or phase includes:**
+- Web/mobile/desktop UI, dashboard, forms, chat, or human-facing CLI
+- A new feature that a person views, configures, edits, reviews, learns from, buys, searches, manages, approves, or operates
+- Roles, derived access differences, ownership, collaboration, review, approval, learning, commerce, or administration
+- Business objects that people create, view, update, move through states, or make decisions about
+
+**Can be skipped or kept lightweight when the project or phase is:**
+- A pure code library
+- Internal refactor
+- Infrastructure or CI/build change
+- Machine-only integration with no product behavior change
+
+**Example: word memory cards**
+
+User says: "I want to make word memory cards."
+
+Do not jump straight to "card CRUD" or "React pages." First clarify:
+- Progressive domain: "Is the root concept a Word, a Word Card, a Deck, or a Review Session? Which one should we define first?"
+- Concept: "What is a word here? What makes a word become a word card? What is the card display surface?"
+- Scope: "Is this only English vocabulary, or any language? Is it a single deck or multiple decks?"
+- Actors: "Who uses it: only you, students, parents, teachers, visitors?"
+- Role operations: "What can a parent do with a deck? What can a student do during review? Can visitors try sample cards?"
+- Derived access: "If parents set the card range and students only review, students do not get range-setting unless you add that use case."
+
+Only after that should requirements and roadmap be written.
+
+</human_interaction_gate>
 
 <anti_patterns>
 

@@ -1,6 +1,6 @@
 ---
 name: spec-execute
-description: "Execute all plans for a phase in waves. Runs tasks with atomic commits, verification after each task, and generates SUMMARY.md. Supports wave filtering, gap-only, and interactive modes."
+description: "Execute all plans for a phase in waves. Runs tasks with atomic commits, domain_trace enforcement for human-interaction plans, verification after each task, and generates SUMMARY.md. Supports wave filtering, gap-only, and interactive modes."
 argument-hint: "<phase-number> [--wave N] [--gaps-only] [--interactive]"
 ---
 
@@ -27,12 +27,12 @@ Flags are documentation-only — not automatically active. A flag is active **on
 
 ## Workflow
 
-1. **Pre-Execution** — Load context (STATE.md, PROJECT.md, PLAN.md), validate readiness, check user_setup
+1. **Pre-Execution** — Load context (STATE.md, PROJECT.md, DOMAIN.md, USE_CASES.md, REQUIREMENTS.md, PLAN.md), validate readiness, run `python scripts/validate_trace.py .` when available, check user_setup and domain_trace
 2. **Filter Plans** *(if flags active)*:
    - `--wave N` → select only plans with `wave: N`
    - `--gaps-only` → select only plans with `gap_closure: true` in frontmatter
 3. **Execute in Waves** — Group plans by `wave` number. Within a wave, plans are independent and run in flexible order; waves execute sequentially. `--wave N` runs only that wave.
-4. **Per-Task** — Read first → implement → verify → atomic commit. In `--interactive`, pause for a user checkpoint between every task.
+4. **Per-Task** — Read first → apply domain_trace to code generation when applicable → implement → verify acceptance criteria and domain trace → atomic commit. In `--interactive`, pause for a user checkpoint between every task.
 5. **Checkpoints** — Pause at `checkpoint:*` tasks (and between tasks in `--interactive`), present to user, resume on approval
 6. **Post-Execution** — Create SUMMARY.md, update STATE.md, update PROJECT.md if needed. Phase verification/completion only fires when no incomplete plans remain.
 
@@ -56,6 +56,9 @@ WAVE 3:   Plan 05              # Depends on plans 03+04
 ## Key Rules
 
 - Build/test must pass after each task before committing
+- Trace lint must pass before code edits for human-interaction plans
+- Human-interaction plans must implement actor/use-case/domain behavior in code, not just planning docs
+- Derived access rules must be enforced by code behavior, hidden/absent affordances, validation, guards, or tests as appropriate
 - Do NOT proceed past a failing verification
 - 3 consecutive failures → document, consult debugging references, create checkpoint for user
 - Context window filling → complete current task, commit, create `.continue-here.md`

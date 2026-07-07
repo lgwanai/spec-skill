@@ -27,6 +27,8 @@
 - **拒绝企业级过家家**：没有敏捷冲刺、故事点、无休止的会议和 Jira 工作流。我们只为 Solo 开发者和小型团队提供真正有效、极简的构建系统。
 - **解决上下文腐化 (Context Rot)**：将复杂的项目拆解为多个独立的、原子化的任务（Phase/Plan），每次执行时都保持清爽的上下文，确保 AI 始终保持最高水平的输出。
 - **强制的 Ask-Plan-Execute (询问-计划-执行) 机制**：有效避免大语言模型在需求模糊时盲目"幻觉"输出代码，保证你想要的东西被正确地构建。
+- **交互系统先建模人和领域**：当项目涉及 Web/App/CLI、角色或业务操作流时，先递进定义领域概念、用户角色和角色-用例关系，再连续映射到需求、路线图、计划和验收，减少数据模型返工；权限由用例行为推导，而不是提前空想出来。
+- **让业务建模进入代码生成**：领域概念和用例会进入 PLAN 的 `domain_trace`、任务级 `<domain_trace>`、执行硬门、测试和 UAT，约束模型、接口、UI/CLI 操作、访问检查和验收证据，避免只产出中间文档；`scripts/validate_trace.py` 会校验这条链路。
 
 ---
 
@@ -52,6 +54,8 @@
 | 文件 | 模板 | 作用 |
 |------|------|------|
 | `PROJECT.md` | `templates/PROJECT.md` | 项目愿景、需求、约束、关键决策 |
+| `DOMAIN.md` | `templates/DOMAIN.md` | 有人参与交互时的领域概念/模块/entity，支持从大模块到子实体的递进拆解 |
+| `USE_CASES.md` | `templates/USE_CASES.md` | 有人参与交互时的用户/角色、角色目标、角色-领域操作，以及由用例推导出的访问规则 |
 | `REQUIREMENTS.md` | `templates/REQUIREMENTS.md` | 需求边界与可追溯性，明确 v1/v2/超纲 |
 | `ROADMAP.md` | `templates/ROADMAP.md` | 阶段分解路线图，含成功标准和进度跟踪 |
 | `STATE.md` | `templates/STATE.md` | 跨会话记忆：当前位置、决策、阻碍、性能指标 |
@@ -94,12 +98,13 @@
 在对话框中唤醒并使用该技能（例如发送："@spec-skill 帮我开发一个基于 React 的待办事项工具"）。工作流将严格遵循以下步骤：
 
 1. **项目初始化**：AI 会帮你梳理并创建项目的基础上下文文件（`.planning/PROJECT.md`、`config.json` 等）。
-2. **需求讨论（阻塞阶段）**：AI 会围绕需求进行多轮提问，直到彻底理清功能边界和技术栈约束。参考 `references/questioning.md`。
-3. **路线图规划**：AI 会将需求拆解为多个开发阶段（Phase），并生成 `.planning/ROADMAP.md`。
-4. **阶段计划与评审（阻塞阶段）**：在进入每一个 Phase 之前，AI 会进行调研并生成详细的原子化任务计划 `PLAN.md`。**此时 AI 会停止操作并等待你的确认**。
-5. **代码执行**：你确认后，AI 按照 `workflows/execute-plan.md` 执行：逐任务实现→逐任务验证→逐任务原子提交。
-6. **验证与总结**：每阶段完成后，AI 按照 `workflows/verify-work.md` 对照 must_haves 进行目标逆向验证，失败则生成修复计划，成功则按照 `workflows/transition.md` 更新项目状态并准备下一阶段。
-7. **健康检查**：随时可通过 `workflows/health.md` 检查 `.planning/` 目录完整性，支持自动修复。
+2. **交互门判断（阻塞阶段）**：如果系统涉及人参与交互（Web/App/CLI、角色、业务流程，或用户说要新增一个由人操作的功能），先完成 `.planning/DOMAIN.md` 和 `.planning/USE_CASES.md`；纯库、内部重构、基础设施任务可轻量跳过并记录原因。
+3. **需求讨论（阻塞阶段）**：AI 会围绕需求进行多轮提问，直到彻底理清功能边界、角色-用例关系和技术栈约束。参考 `references/questioning.md`。
+4. **路线图规划**：AI 会将需求拆解为多个开发阶段（Phase），并生成 `.planning/ROADMAP.md`。
+5. **阶段计划与评审（阻塞阶段）**：在进入每一个 Phase 之前，AI 会进行调研并生成详细的原子化任务计划 `PLAN.md`。**此时 AI 会停止操作并等待你的确认**。
+6. **代码执行**：你确认后，AI 按照 `workflows/execute-plan.md` 执行：逐任务实现→逐任务验证→逐任务原子提交。
+7. **验证与总结**：每阶段完成后，AI 按照 `workflows/verify-work.md` 对照 must_haves 进行目标逆向验证，失败则生成修复计划，成功则按照 `workflows/transition.md` 更新项目状态并准备下一阶段。
+8. **健康检查**：随时可通过 `workflows/health.md` 检查 `.planning/` 目录完整性，支持自动修复。
 
 ---
 
@@ -112,6 +117,8 @@ spec-skill/
 ├── templates/                # 文档模板（20 个文件）
 │   ├── README.md             # 规范制品注册表（权威索引）
 │   ├── PROJECT.md            # 项目愿景模板
+│   ├── DOMAIN.md             # 领域概念模板 ★ 新增
+│   ├── USE_CASES.md          # 角色与用例模板 ★ 新增
 │   ├── ROADMAP.md            # 路线图模板
 │   ├── STATE.md              # 状态记忆模板
 │   ├── REQUIREMENTS.md       # 需求模板
@@ -142,6 +149,7 @@ spec-skill/
 └── scripts/                  # 自动化脚本
     ├── init_project.py       # 项目初始化
     ├── validate_project.py   # 项目校验
+    ├── validate_trace.py     # 领域/用例到 PLAN 的 trace 校验
     └── package_skill.py      # 技能打包分发
 ```
 
@@ -181,7 +189,7 @@ spec-skill/
 
 **Q3: 项目中的 `scripts`、`templates`、`workflows` 目录分别有什么用？**
 **A3:**
-- `scripts/` — 可执行的自动化工具：项目初始化、结构校验、技能打包。
+- `scripts/` — 可执行的自动化工具：项目初始化、结构校验、trace 校验、技能打包。
 - `templates/` — 所有规范文档的模板文件，含 `codebase/` 子目录用于存量项目分析。参见 `templates/README.md` 获取完整制品索引。
 - `workflows/` — 各阶段的操作步骤文档（执行计划、验证工作、阶段转换、健康检查），AI 在执行对应阶段时会加载这些文档。
 - `references/` — 参考文档，用于指导 AI 的提问策略和验证方法。

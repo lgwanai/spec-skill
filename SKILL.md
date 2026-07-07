@@ -9,7 +9,7 @@ TRIGGER when: starting a new project from scratch; managing complex multi-phase 
 
 ## Overview
 
-Spec-driven-dev is a structured development system that transforms vague ideas into executable plans through systematic questioning, research, planning, and verification. Inspired by get-shit-done (GSD), it provides templates and workflows for managing software projects from conception to completion.
+Spec-driven-dev is a structured development system that transforms vague ideas into executable plans through systematic questioning, domain/use-case discovery when humans interact with the system, research, planning, and verification. Inspired by get-shit-done (GSD), it provides templates and workflows for managing software projects from conception to completion.
 
 **CRITICAL RULE**: You must **STOP and WAIT** for user confirmation at specific checkpoints. Do not rush from planning to execution in a single turn.
 
@@ -21,7 +21,7 @@ All commands are invoked as `/spec-<name>` (e.g., `/spec-new`, `/spec-plan 1`). 
 
 | Command | Alias | What it does |
 |---------|-------|--------------|
-| `/spec-new` | `/new-project` | Full initialization: questions → requirements → roadmap. Creates `.planning/` structure |
+| `/spec-new` | `/new-project` | Full initialization: questions → domain/use cases when needed → requirements → roadmap. Creates `.planning/` structure |
 | `/spec-plan <N>` | `/plan`, `/plan-phase` | Research + create executable PLAN.md for phase N. Flags: `--prd <file>` (PRD-driven, skip Discuss), `--mvp` (vertical slices + SKELETON.md), `--gaps` (close gaps from VERIFICATION.md) |
 | `/spec-execute <N>` | `/execute`, `/execute-phase` | Execute all plans for phase N in parallel waves. Flags: `--wave N` (run only wave N), `--gaps-only` (only gap-closure plans), `--interactive` (checkpoint between every task) |
 | `/spec-verify <N>` | `/verify`, `/verify-work` | Verify phase N completion: must_haves check, UAT, gap analysis |
@@ -42,7 +42,7 @@ All commands are invoked as `/spec-<name>` (e.g., `/spec-new`, `/spec-plan 1`). 
 
 | Command | Loads Workflow | Produces |
 |---------|---------------|----------|
-| `/spec-new` | `workflows/health.md` (init check) | PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, config.json |
+| `/spec-new` | `workflows/health.md` (init check) | PROJECT.md, DOMAIN.md, USE_CASES.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, config.json |
 | `/spec-plan <N>` | `references/questioning.md` | `NN-CONTEXT.md`, `NN-RESEARCH.md`, `NN-MM-PLAN.md` |
 | `/spec-execute <N>` | `workflows/execute-plan.md` | Code changes, atomic commits, `NN-MM-SUMMARY.md` |
 | `/spec-verify <N>` | `workflows/verify-work.md` | `NN-VERIFICATION.md`, `NN-UAT.md`, fix plans if needed |
@@ -90,12 +90,14 @@ mkdir -p .planning/phases
 
 **Key documents created:**
 - `.planning/PROJECT.md` - Project vision and context
+- `.planning/DOMAIN.md` - Business vocabulary and domain concepts when people interact with the system
+- `.planning/USE_CASES.md` - Actors, roles, and role-to-domain operations when people interact with the system
 - `.planning/REQUIREMENTS.md` - Scoped feature requirements
 - `.planning/ROADMAP.md` - Phase decomposition
 - `.planning/STATE.md` - Project memory and decisions
 - `.planning/config.json` - Workflow preferences
 
-### 2. Requirements Discussion (Interactive - BLOCKING)
+### 2. Discovery Discussion (Interactive - BLOCKING)
 **Goal**: Fully understand the user's intent before generating any files. **You MUST engage in a dialogue.**
 
 **Resources**:
@@ -104,7 +106,7 @@ mkdir -p .planning/phases
 **Actions**:
 1. **Start Open**: Ask "Tell me about what you want to build."
 2. **Loop (Ask -> Wait -> Ask)**:
-   - Ask clarifying questions about features, constraints, and tech stack.
+   - Ask clarifying questions about goals, constraints, domain boundaries, actors, and tech stack.
    - **WAIT** for the user's answer.
    - Challenge vagueness and clarify boundaries based on the answer.
    - **REPEAT** until you have a clear mental model.
@@ -112,7 +114,46 @@ mkdir -p .planning/phases
 4. **STOP**: Ask "Do we have enough details to proceed to planning? Or should we discuss more?"
 5. **WAIT**: Do not generate any Roadmap or Plan files until the user explicitly says "Proceed to Plan".
 
-### 3. Roadmap Planning
+### 3. Domain & Use-Case Gate
+**Only proceed here after user confirmation.**
+
+Before writing REQUIREMENTS.md or ROADMAP.md, decide whether humans interact with the system.
+
+**The gate is REQUIRED when:**
+- The system has a UI, app, dashboard, form, human-facing CLI, chat flow, or workflow.
+- The user asks to "build a system/app/tool/page/feature" where a person will create, view, edit, review, configure, approve, learn, buy, search, or operate something.
+- Different people may use the product differently.
+- There are roles, derived access differences, ownership, collaboration, review, approval, learning, commerce, or administration.
+- The project has business objects whose meaning, state, ownership, or lifecycle affects behavior.
+
+**The gate can be LIGHTWEIGHT/SKIPPED when:**
+- The work is a pure library, internal refactor, infrastructure change, CI/build task, or machine-only integration.
+- The phase changes implementation only and does not introduce or alter human-facing behavior.
+
+**Actions when required:**
+1. **Define top-level concepts first**: Create `.planning/DOMAIN.md` from `templates/DOMAIN.md`. Start with the largest meaningful modules/entities, then recursively decompose only as far as requirements, data, behavior, and verification need.
+2. **Keep domain discovery continuous**: Do not treat DOMAIN.md/USE_CASES.md as a separate detour. Their concepts and use cases must flow directly into REQUIREMENTS.md, ROADMAP.md, phase CONTEXT.md, PLAN.md must_haves, and UAT.
+3. **Define actors/roles**: Create `.planning/USE_CASES.md` from `templates/USE_CASES.md`. Identify roles and their goals.
+4. **Map role operations**: For each role, map what they can do to domain concepts and what outcome results.
+5. **Derive access rules from behavior**: Do not invent permissions as a separate design layer. If only Parent can set word-card scope and Student is not given that use case, then scope-setting is Parent-only until the user says otherwise.
+6. **Resolve unstable terms**: If a term like "card", "project", "account", "record", or "workspace" is ambiguous, clarify it before requirements.
+7. **STOP if unstable**: Do not decompose roadmap while core concepts, actors, or actor-to-concept operations remain ambiguous.
+
+**Actions when not required:**
+1. Record `Interaction Gate: Not required` and the reason in DOMAIN.md/USE_CASES.md if the files are being generated.
+2. Proceed directly to requirements and roadmap.
+
+### 4. Requirements Extraction
+Convert confirmed discovery into scoped, traceable requirements.
+
+**Rules:**
+- For human-interaction systems, every v1 user-facing requirement must trace to at least one use case and at least one domain concept.
+- Avoid generic "User can..." when roles differ. Prefer "[Role] can [operation] [domain concept] so that [outcome]."
+- Access control is derived from the use-case matrix and explicit boundaries. Missing role-operation pairs are `unconfirmed`: do not implement or expose them silently, and ask or defer until the user expands the use case.
+- Requirements are the continuation of the use-case model, not a new feature list. Preserve actor, operation, domain concept, and outcome through requirement IDs.
+- Implementation-only work can still be tracked as technical requirements, but must not replace the role/use-case model for product behavior.
+
+### 5. Roadmap Planning
 **Only proceed here after user confirmation.**
 Decompose the confirmed requirements into a phased roadmap:
 
@@ -122,16 +163,18 @@ Decompose the confirmed requirements into a phased roadmap:
 - **Dependency tracking**: Clear phase dependencies
 - **Success criteria**: Observable behaviors for verification
 
-### 4. Per-Phase Analysis & Discussion (BLOCKING)
+### 6. Per-Phase Analysis & Discussion (BLOCKING)
 Before planning **every phase**, re-analyze context and run a focused discussion loop.
 
 **Resources**:
 - Refer to `references/questioning.md` for phase-level clarification patterns.
 
 **Actions**:
-1. **Analyze Phase Context**: Review `.planning/PROJECT.md`, `.planning/ROADMAP.md`, `.planning/STATE.md`, and dependency phases.
+1. **Analyze Phase Context**: Review `.planning/PROJECT.md`, `.planning/DOMAIN.md`, `.planning/USE_CASES.md`, `.planning/ROADMAP.md`, `.planning/STATE.md`, and dependency phases.
 2. **Loop (Ask -> Wait -> Ask)**:
    - Ask phase-specific clarifying questions about scope, constraints, interfaces, and acceptance criteria.
+   - If the phase introduces or changes human interaction, roles, derived access rules, or domain operations, update DOMAIN.md/USE_CASES.md before PLAN.md.
+   - If the phase only implements previously modeled behavior, keep the use-case trace and continue into implementation planning without redoing discovery.
    - **WAIT** for the user's answer.
    - Refine unclear assumptions and identify missing decisions.
    - **REPEAT** until phase boundaries are unambiguous.
@@ -139,7 +182,7 @@ Before planning **every phase**, re-analyze context and run a focused discussion
 4. **STOP**: Ask "Do we have enough details for this phase plan?"
 5. **WAIT**: Do not create/update this phase's `PLAN.md` until the user explicitly says "Proceed to Phase Plan".
 
-### 5. Phase Planning & Review (BLOCKING)
+### 7. Phase Planning & Review (BLOCKING)
 Create the detailed execution plan for the current phase, but **do not execute yet**. This step repeats for each phase.
 
 **Resources**:
@@ -148,13 +191,14 @@ Create the detailed execution plan for the current phase, but **do not execute y
 **Actions**:
 1. Create/Update `.planning/phases/XX-phase/XX-PLAN.md`.
 2. **Define Verification (must_haves)**: In the YAML frontmatter, define `must_haves` (`truths`, `artifacts`, `key_links`) based on the phase goal.
-3. **Plan Tasks**: Break down implementation steps to satisfy verification criteria. Use `<read_first>` tags in tasks to define files that must be read before execution, and `<acceptance_criteria>` for grep-verifiable conditions.
-4. **Review**: Check plan against the "Plan Verification Checklist".
-5. **STOP**: Present the full plan content to the user.
-6. **ASK**: "Here is the detailed plan. Does this look correct? Shall I proceed with execution?"
-7. **WAIT**: Do not write any code until the user explicitly says "Yes" or "Proceed".
+3. **Carry Domain Trace Into Codegen**: For human-interaction/business plans, define `domain_trace` in frontmatter and task-level `<domain_trace>` blocks. Include use cases, actors, domain concepts/modules/entities, and derived access rules that implementation must satisfy.
+4. **Plan Tasks**: Break down implementation steps to satisfy verification criteria. For business systems, each task must explain how the use case becomes concrete code: data/entity shape, UI/CLI/API/service behavior, derived access checks, tests, and UAT evidence. Use `<read_first>` tags in tasks to define files that must be read before execution, and `<acceptance_criteria>` for grep-verifiable conditions.
+5. **Review**: Check plan against the "Plan Verification Checklist".
+6. **STOP**: Present the full plan content to the user.
+7. **ASK**: "Here is the detailed plan. Does this look correct? Shall I proceed with execution?"
+8. **WAIT**: Do not write any code until the user explicitly says "Yes" or "Proceed".
 
-### 6. Phase Execution
+### 8. Phase Execution
 **Only proceed here after user confirmation of the PLAN.**
 Execute the **approved** plan step-by-step.
 
@@ -170,7 +214,7 @@ Execute the **approved** plan step-by-step.
 - **Checkpoints**: User interaction points (decisions, visual verification)
 - **user_setup**: External service configuration the user must complete
 
-### 7. Verification & Summary
+### 9. Verification & Summary
 Ensure quality and document outcomes:
 
 **Resources**:
@@ -196,6 +240,8 @@ All templates are in the `templates/` directory. See `templates/README.md` for t
 
 ### Core Planning Templates
 - `templates/PROJECT.md` — Project vision, requirements, constraints, key decisions
+- `templates/DOMAIN.md` — Domain concepts, attributes, relationships, lifecycles, invariants; required when humans interact with the system
+- `templates/USE_CASES.md` — Actors/roles, role relationships, use-case matrix, role-to-domain operations
 - `templates/ROADMAP.md` — Phase decomposition with success criteria and progress tracking
 - `templates/STATE.md` — Cross-session memory: position, decisions, blockers, performance, Deferred Items
 - `templates/REQUIREMENTS.md` — Scoped functional requirements with traceability
@@ -250,12 +296,13 @@ User: "I want to build a todo app with user authentication"
 
 Workflow:
 1. Initialize project: Create PROJECT.md with core value "Simple, reliable todo management"
-2. Requirements Discussion: Clarify "user authentication" (Email/Password? OAuth? JWT?)
-3. Roadmap: Phase 1 (Auth), Phase 2 (Todo CRUD), Phase 3 (Advanced features)
-4. Per-Phase Discussion (Phase 1): Reconfirm auth boundaries and constraints
-5. Plan Review (Phase 1): Present Phase 1 plan for user approval
-6. Execution (Phase 1): Implement auth with verification tests
-7. Repeat steps 4-6 for each subsequent phase
+2. Domain & Use-Case Gate: Required because people use the app. Define Todo, List, Account, Session; define roles such as Owner or Collaborator if collaboration exists
+3. Requirements Discussion: Clarify "user authentication" (Email/Password? OAuth? JWT?) and trace requirements to use cases
+4. Roadmap: Phase 1 (Auth), Phase 2 (Todo CRUD), Phase 3 (Advanced features)
+5. Per-Phase Discussion (Phase 1): Reconfirm auth boundaries and constraints
+6. Plan Review (Phase 1): Present Phase 1 plan for user approval
+7. Execution (Phase 1): Implement auth with verification tests
+8. Repeat steps 5-7 for each subsequent phase
 ```
 
 ### Example 2: API Service
@@ -264,18 +311,20 @@ User: "Build a REST API for inventory management"
 
 Workflow:
 1. Initialize: PROJECT.md with value "Reliable inventory tracking API"
-2. Requirements Discussion: Define API surface, database choice, and auth strategy
-3. Roadmap: Phase 1 (Basic CRUD), Phase 2 (Search), Phase 3 (Auth), Phase 4 (Reporting)
-4. Per-Phase Discussion (Phase 1): Confirm endpoint scope and data model details
-5. Plan Review (Phase 1): Confirm endpoints and data models
-6. Execution (Phase 1): Implement endpoints with tests
-7. Repeat steps 4-6 for each subsequent phase
+2. Domain & Use-Case Gate: Required if humans/operators/admins use or govern inventory. Define Product, SKU, Stock Movement, Warehouse, Adjustment; define Clerk, Manager, Admin if roles differ
+3. Requirements Discussion: Define API surface, database choice, auth strategy, and use-case traceability
+4. Roadmap: Phase 1 (Basic CRUD), Phase 2 (Search), Phase 3 (Auth), Phase 4 (Reporting)
+5. Per-Phase Discussion (Phase 1): Confirm endpoint scope and data model details
+6. Plan Review (Phase 1): Confirm endpoints and data models
+7. Execution (Phase 1): Implement endpoints with tests
+8. Repeat steps 5-7 for each subsequent phase
 ```
 
 ## Best Practices
 
 ### 1. Context Management
 - **Discuss before planning**: Ensure alignment on requirements via `workflows/transition.md` and `templates/discovery.md`
+- **Model people before features when people interact**: For UI/app/CLI/business workflows, define DOMAIN.md and USE_CASES.md before REQUIREMENTS.md and ROADMAP.md
 - **Confirm before executing**: User must approve the plan
 - **Keep STATE.md updated** with all key decisions
 - **Use SUMMARY.md** for each completed plan with full frontmatter for automatic context assembly

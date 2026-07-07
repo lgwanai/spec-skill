@@ -39,6 +39,12 @@ patterns-established:
   - "Pattern 2: description"
 
 requirements-completed: []  # REQUIRED — Copy ALL requirement IDs from this plan's `requirements` frontmatter field.
+domain-trace:
+  interaction_gate: [required | not_required]
+  use_cases: []             # Copy from PLAN.md domain_trace when present
+  actors: []
+  concepts: []
+  derived_access_rules_verified: []
 
 # Metrics
 duration: Xmin
@@ -61,6 +67,17 @@ completed: YYYY-MM-DD
 - [Most important outcome]
 - [Second key accomplishment]
 - [Third if applicable]
+
+## Domain Trace Evidence
+
+[For human-interaction/business plans. If not applicable, write "Not applicable - interaction gate not required."]
+
+| Trace Item | Code Artifact(s) | Verification Evidence |
+|------------|------------------|-----------------------|
+| Actor: [Role] | [files/routes/components/tests] | [how actor behavior was verified] |
+| Use Case: [UC-___] | [files/routes/components/tests] | [allowed path evidence] |
+| Concept: [Domain concept] | [models/types/schema/state/UI/API] | [representation evidence] |
+| Derived access: [rule] | [guards/checks/hidden UI/tests] | [allowed + denied path evidence] |
 
 ## Task Commits
 

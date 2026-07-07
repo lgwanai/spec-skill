@@ -62,6 +62,9 @@ class SkillPackager:
             "workflows/health.md",
             "commands/spec/new.md",
             "commands/spec/help.md",
+            "scripts/init_project.py",
+            "scripts/validate_project.py",
+            "scripts/validate_trace.py",
         ]
     
     def validate_skill_structure(self) -> bool:

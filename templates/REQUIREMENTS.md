@@ -9,17 +9,21 @@ Template for `.planning/REQUIREMENTS.md` — checkable requirements that define 
 
 **Defined:** [date]
 **Core Value:** [from PROJECT.md]
+**Interaction Gate:** [Required / Not required]
+**Domain Model:** `.planning/DOMAIN.md`
+**Use Cases:** `.planning/USE_CASES.md`
 
 ## v1 Requirements
 
 Requirements for initial release. Each maps to roadmap phases.
+For human-interaction systems, each user-facing requirement continues a use case. Preserve Actor / Operation / Domain Concept / Outcome instead of rewriting it as an unrelated feature.
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can sign up with email and password
-- [ ] **AUTH-02**: User receives email verification after signup
-- [ ] **AUTH-03**: User can reset password via email link
-- [ ] **AUTH-04**: User session persists across browser refresh
+- [ ] **AUTH-01**: [Actor] can sign up with email and password so that [outcome]. (Use case: UC-___; Concepts: [Account, Session])
+- [ ] **AUTH-02**: [Actor] receives email verification after signup so that [outcome]. (Use case: UC-___; Concepts: [Account])
+- [ ] **AUTH-03**: [Actor] can reset password via email link so that [outcome]. (Use case: UC-___; Concepts: [Account])
+- [ ] **AUTH-04**: [Actor] session persists across browser refresh so that [outcome]. (Use case: UC-___; Concepts: [Session])
 
 ### [Category 2]
 
@@ -54,13 +58,23 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
-| [REQ-ID] | Phase [N] | Pending |
+| Requirement | Actor / Role | Use Case | Domain Concept(s) | Phase | Status |
+|-------------|--------------|----------|-------------------|-------|--------|
+| AUTH-01 | [Role] | UC-___ | [Concepts] | Phase 1 | Pending |
+| AUTH-02 | [Role] | UC-___ | [Concepts] | Phase 1 | Pending |
+| AUTH-03 | [Role] | UC-___ | [Concepts] | Phase 1 | Pending |
+| AUTH-04 | [Role] | UC-___ | [Concepts] | Phase 1 | Pending |
+| [REQ-ID] | [Role / N/A] | [UC-___ / N/A] | [Concepts / N/A] | Phase [N] | Pending |
+
+## Derived Access Notes
+
+Access is inferred from use cases and explicit boundaries. Use three statuses: `allowed`, `denied`, and `unconfirmed`. Unconfirmed operations must not be silently implemented.
+
+| Status | Operation | Role(s) | Source Use Case(s) / Reason | Requirement(s) |
+|--------|-----------|---------|-----------------------------|----------------|
+| allowed | [Operation] | [Role(s)] | [UC-___] | [REQ-___] |
+| denied | [Operation] | [Role(s)] | [Explicit boundary] | [REQ-___] |
+| unconfirmed | [Operation] | [Role(s)] | [Open question / future scope] | [REQ-___ / N/A] |
 
 **Coverage:**
 - v1 requirements: [X] total
@@ -80,6 +94,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 - ID: `[CATEGORY]-[NUMBER]` (AUTH-01, CONTENT-02, SOCIAL-03)
 - Description: User-centric, testable, atomic
 - Checkbox: Only for v1 requirements (v2 are not yet actionable)
+- For human-interaction systems: `[Actor/Role] can [operation] [domain concept] so that [outcome]. (Use case: UC-___; Concepts: [...])`
+- For implementation-only requirements: mark Actor/Use Case as `N/A` in Traceability and explain why in the category notes
 
 **Categories:**
 - Derive from research FEATURES.md categories
@@ -100,6 +116,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Empty initially, populated during roadmap creation
 - Each requirement maps to exactly one phase
 - Unmapped requirements = roadmap gap
+- If the interaction gate is required, every user-facing v1 requirement maps to at least one actor/role, use case, and domain concept
+- Avoid generic "User" when roles differ; use the role name from USE_CASES.md
+- Derived access notes should be copied from USE_CASES.md and refined only when requirements add detail. Do not add permissions that have no source use case or explicit boundary; leave them `unconfirmed`.
 
 **Status Values:**
 - Pending: Not started
@@ -148,10 +167,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ### Profiles
 
-- [ ] **PROF-01**: User can create profile with display name
-- [ ] **PROF-02**: User can upload avatar image
-- [ ] **PROF-03**: User can write bio (max 500 chars)
-- [ ] **PROF-04**: User can view other users' profiles
+- [ ] **PROF-01**: Member can create a profile with display name so that other members can identify them. (Use case: UC-005; Concepts: Profile, Account)
+- [ ] **PROF-02**: Member can upload avatar image so that their profile is recognizable. (Use case: UC-005; Concepts: Profile)
+- [ ] **PROF-03**: Member can write bio (max 500 chars) so that they can describe themselves. (Use case: UC-005; Concepts: Profile)
+- [ ] **PROF-04**: Member can view other members' profiles so that they can understand who posted content. (Use case: UC-006; Concepts: Profile)
 
 ### Content
 
@@ -197,26 +216,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
-| PROF-01 | Phase 2 | Pending |
-| PROF-02 | Phase 2 | Pending |
-| PROF-03 | Phase 2 | Pending |
-| PROF-04 | Phase 2 | Pending |
-| CONT-01 | Phase 3 | Pending |
-| CONT-02 | Phase 3 | Pending |
-| CONT-03 | Phase 3 | Pending |
-| CONT-04 | Phase 3 | Pending |
-| CONT-05 | Phase 3 | Pending |
-| SOCL-01 | Phase 4 | Pending |
-| SOCL-02 | Phase 4 | Pending |
-| SOCL-03 | Phase 4 | Pending |
-| SOCL-04 | Phase 4 | Pending |
-| SOCL-05 | Phase 4 | Pending |
+| Requirement | Actor / Role | Use Case | Domain Concept(s) | Phase | Status |
+|-------------|--------------|----------|-------------------|-------|--------|
+| AUTH-01 | Visitor | UC-001 | Account, Session | Phase 1 | Pending |
+| AUTH-02 | New Member | UC-001 | Account | Phase 1 | Pending |
+| AUTH-03 | Member | UC-002 | Account | Phase 1 | Pending |
+| AUTH-04 | Member | UC-003 | Session | Phase 1 | Pending |
+| PROF-01 | Member | UC-005 | Profile, Account | Phase 2 | Pending |
+| PROF-02 | Member | UC-005 | Profile | Phase 2 | Pending |
+| PROF-03 | Member | UC-005 | Profile | Phase 2 | Pending |
+| PROF-04 | Member | UC-006 | Profile | Phase 2 | Pending |
+| CONT-01 | Member | UC-007 | Post | Phase 3 | Pending |
+| CONT-02 | Member | UC-007 | Post, Media | Phase 3 | Pending |
+| CONT-03 | Post Author | UC-008 | Post | Phase 3 | Pending |
+| CONT-04 | Post Author | UC-009 | Post | Phase 3 | Pending |
+| CONT-05 | Member | UC-010 | Feed, Post | Phase 3 | Pending |
+| SOCL-01 | Member | UC-011 | Follow Relationship | Phase 4 | Pending |
+| SOCL-02 | Member | UC-011 | Follow Relationship | Phase 4 | Pending |
+| SOCL-03 | Member | UC-012 | Reaction, Post | Phase 4 | Pending |
+| SOCL-04 | Member | UC-013 | Comment, Post | Phase 4 | Pending |
+| SOCL-05 | Member | UC-014 | Activity Feed, Post | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total

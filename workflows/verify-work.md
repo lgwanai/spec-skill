@@ -9,12 +9,23 @@ Workflow for verifying phase completion — checking that the codebase delivers 
 ### 1. Load Verification Context
 - Read `.planning/STATE.md`
 - Read `.planning/PROJECT.md` (for core value and requirements)
+- Read `.planning/DOMAIN.md` and `.planning/USE_CASES.md` when present
+- Read `.planning/REQUIREMENTS.md` for actor/use-case/domain traceability
 - Read all `PLAN.md` files for the current phase
 - Collect all `must_haves` from all plan frontmatters
+- Collect all `domain_trace` blocks from all plan frontmatters
 - Read all `SUMMARY.md` files for the current phase
 - Read `.planning/phases/{phase}/{phase}-VALIDATION.md` if it exists
 
 ### 2. Run Automated Checks
+
+**Trace lint:**
+```bash
+python scripts/validate_trace.py .  # if available
+```
+- [ ] Trace references are consistent
+- [ ] Human-interaction plans carry actor/use-case/domain trace
+- [ ] Derived access rules use `allowed:`, `denied:`, or `unconfirmed:`
 
 **Build:**
 ```bash
@@ -48,9 +59,10 @@ npm test  # or equivalent
 
 For each truth in `must_haves.truths`:
 1. Read the truth statement
-2. Determine how to verify it (manual test, automated check, code inspection)
-3. Perform the check
-4. Record: Pass / Fail with evidence
+2. If the plan has `domain_trace.interaction_gate: required`, map the truth to actor, use case, domain concept, and outcome
+3. Determine how to verify it (manual test, automated check, code inspection)
+4. Perform the check
+5. Record: Pass / Fail with evidence
 
 Example:
 - Truth: "User can see existing messages"
@@ -79,6 +91,20 @@ For plans with `checkpoint:human-verify` tasks:
 - Present each deliverable to the user
 - User visits URL, tests functionality
 - User reports: Pass / Fail with observations
+
+### 4a. Verify Domain Trace (if applicable)
+
+For every plan with `domain_trace.interaction_gate: required`:
+- [ ] Each referenced use case is implemented as behavior, not just labels, placeholders, or unused types
+- [ ] Each referenced domain concept is represented consistently in code artifacts (models/types/schema/state/API/CLI/UI/tests as appropriate)
+- [ ] Each derived access rule is enforced:
+  - allowed actor-operation pairs succeed
+  - denied actor-operation pairs fail, are hidden, or are unavailable
+  - unconfirmed actor-operation pairs are not silently implemented or exposed
+- [ ] No broad role/permission system was introduced without a source use case
+- [ ] Tests or UAT cover the primary actor outcome and any derived denied path that protects data or behavior
+
+Record evidence in the verification report. A failed domain trace is a real gap even if build/tests pass.
 
 ### 5. Generate Verification Report
 
@@ -160,13 +186,21 @@ Provide a phase number to start testing (e.g., /spec-verify 4)
 
 #### 7b. Extract tests from SUMMARY.md
 
-Read each `SUMMARY.md` and parse for:
+Read USE_CASES.md, REQUIREMENTS.md, PLAN `domain_trace`, and each `SUMMARY.md`. Parse for:
 1. **Accomplishments** — features/functionality added
 2. **User-facing changes** — UI, workflows, interactions
+3. **Use-case trace** — actor, use case, domain concept, outcome
+4. **Derived access rules** — allowed, denied, and unconfirmed operations visible to users
 
 Focus on USER-OBSERVABLE outcomes, not implementation details. For each deliverable, create a test:
 - `name`: Brief test name
 - `expected`: What the user should see/experience (specific, observable)
+- `trace`: Actor / UC ID / Domain Concept / Requirement ID when available
+
+For each derived access rule that affects user-visible behavior, create UAT tests when feasible:
+- allowed role can complete the operation
+- denied role cannot complete the operation or does not see the affordance
+- unconfirmed operation is not exposed or silently implemented
 
 Skip internal/non-observable items (refactors, type changes, etc.).
 

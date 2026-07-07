@@ -18,6 +18,8 @@ The only legal half-state is mid-production-commits while still actively working
 ### 1. Load Context
 - Read `.planning/STATE.md` for current position
 - Read `.planning/PROJECT.md` for project context
+- Read `.planning/DOMAIN.md` and `.planning/USE_CASES.md` when they exist
+- Read `.planning/REQUIREMENTS.md` for requirement-to-use-case traceability
 - Read the phase's `PLAN.md` file
 - Read any dependency SUMMARY files referenced in the plan's `<context>` section
 
@@ -28,8 +30,14 @@ The only legal half-state is mid-production-commits while still actively working
 - [ ] All dependency plans have completed SUMMARY files
 - [ ] Plan has `requirements` in frontmatter
 - [ ] Plan has `must_haves` defined in frontmatter
+- [ ] If `scripts/validate_trace.py` exists, it passes before code edits
+- [ ] For human-interaction plans, plan has `domain_trace.interaction_gate: required`
+- [ ] For human-interaction plans, `domain_trace.use_cases`, `domain_trace.actors`, and `domain_trace.concepts` are not empty
+- [ ] For human-interaction plans, `domain_trace.derived_access_rules` is present when roles perform different operations on the same concept
 - [ ] No blockers listed in STATE.md for this phase
 - [ ] No half-state for this plan: if production commits for this plan exist but SUMMARY.md is uncommitted, finalize the SUMMARY first before starting new work
+
+**Domain-trace hard gate:** If a plan implements UI/app/CLI/business behavior but lacks actor/use-case/concept trace, STOP before editing code. Revise the plan or ask for clarification. Do not generate generic CRUD, generic screens, or broad role systems to fill the gap.
 
 ### 3. Check for User Setup
 - Review plan's `user_setup` frontmatter field
@@ -49,6 +57,7 @@ For each `<task>` in the plan:
 **Step 1: Read First**
 - Read all files listed in `<read_first>`
 - Read all files listed in `<files>` that will be modified
+- For human-interaction tasks, read the task's `<domain_trace>` and the matching entries in DOMAIN.md, USE_CASES.md, and REQUIREMENTS.md
 - Understand current state before making changes
 - **MANDATORY gate:** If the task has a `<read_first>` field, you MUST read every listed file BEFORE making any edits. This is not optional. Do not skip files because you "already know" what's in them — read them. The read_first files establish ground truth for the task.
 
@@ -56,6 +65,13 @@ For each `<task>` in the plan:
 - Follow the `<action>` instructions precisely
 - Use concrete values specified in the action
 - Write tests first if this is a TDD plan (type: tdd)
+- For human-interaction/business work, translate the domain trace into real code:
+  - Domain concepts become data models, types, schemas, services, commands, components, or state names that match existing project conventions.
+  - Use cases become end-to-end behavior across UI/CLI/API/service/data as appropriate.
+  - Actor names and outcomes guide screen states, API contracts, command behavior, validation, and copy where relevant.
+  - Derived access rules become concrete checks or intentionally absent affordances. Allowed operations must work; denied operations must be blocked, hidden, or unavailable; unconfirmed operations must not be silently implemented.
+  - Tests must prove at least the primary allowed path and any derived denied path that protects data or behavior.
+- If implementing the action would require inventing a new role, concept, or access rule not present in DOMAIN.md/USE_CASES.md, STOP and update the planning artifacts before continuing.
 
 **TDD commit format (for `type: tdd` plans — RED-GREEN-REFACTOR):**
 - RED: Write failing test(s), run (MUST fail), commit: `test({phase}-{plan}): add failing test for [feature]`
@@ -73,6 +89,13 @@ Errors: RED doesn't fail → investigate test/existing feature. GREEN doesn't pa
   4. Repeat until all criteria pass — you are BLOCKED from starting the next task until this gate clears
   5. If a criterion cannot be satisfied after 2 fix attempts, log it as a deviation with reason — do NOT silently skip it
 - This is not advisory. A task with failing acceptance criteria is an incomplete task.
+- **HARD GATE — domain trace verification:** For each human-interaction task:
+  1. Confirm every referenced actor/use case/concept appears in the modified code, tests, routes, commands, or UI flow as appropriate.
+  2. Confirm allowed operations from derived access rules are implemented.
+  3. Confirm denied operations are blocked, hidden, absent, or validated against.
+  4. Confirm unconfirmed operations are not silently implemented or exposed.
+  5. Confirm at least one automated or manual check proves the use-case outcome.
+  6. If any item fails, fix before starting the next task.
 
 **Step 4: Commit**
 - Commit with message: `type({phase}-{plan}): {task description}`
@@ -149,6 +172,7 @@ After all tasks complete:
 - Verify key-files.created exist on disk with `[ -f path ]`
 - Check `git log --oneline --all --grep="{phase}-{plan}"` returns at least 1 commit
 - Re-run ALL `<acceptance_criteria>` from every task — if any fail, fix before finalizing SUMMARY
+- Re-run domain-trace checks for human-interaction plans — actor/use-case/concept/access behavior must still match the plan
 - Re-run the plan-level `<verification>` commands — log results in SUMMARY
 - Append `## Self-Check: PASSED` or `## Self-Check: FAILED` to SUMMARY
 
@@ -178,6 +202,7 @@ After all tasks complete:
 ### Must-Haves Verification
 After all plans in a phase complete:
 - Verify `truths`: Each observable behavior is actually working
+- For human-interaction plans, every truth must be checked against its actor, use case, domain concept, and outcome
 - Verify `artifacts`: Files exist with real content (not placeholders)
   - Check `min_lines` if specified
   - Check `exports` if specified
@@ -185,6 +210,14 @@ After all plans in a phase complete:
 - Verify `key_links`: Connections exist and match patterns
   - Grep for `pattern` in the source file
   - Verify the `via` mechanism is present
+
+### Domain Trace Verification
+For every plan with `domain_trace.interaction_gate: required`:
+- Verify the code implements each referenced use case as behavior, not just files or labels
+- Verify domain concepts are represented consistently in data shape, state, API/CLI contracts, UI components, and tests
+- Verify derived access rules: allowed role-operation pairs succeed; denied role-operation pairs fail, are hidden, or are unavailable; unconfirmed role-operation pairs are not silently implemented
+- Verify no broad, unrequested role/permission framework was introduced without a use-case source
+- Record evidence in SUMMARY and VERIFICATION
 
 ### Gap Handling
 - Gaps found → Create fix plans

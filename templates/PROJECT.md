@@ -19,6 +19,15 @@ One sentence that drives prioritization when tradeoffs arise.]
 
 ## Requirements
 
+### Domain / Interaction Gate
+
+<!-- Required when people interact with the system through UI, app, CLI, dashboard, workflow, or role-specific behavior. -->
+
+- **Interaction gate**: [Required / Not required]
+- **Reason**: [Why people/roles/domain modeling is or is not needed]
+- **Domain model**: `.planning/DOMAIN.md`
+- **Use cases**: `.planning/USE_CASES.md`
+
 ### Validated
 
 <!-- Shipped and confirmed valuable. -->
@@ -87,6 +96,12 @@ Common types: Tech stack, Timeline, Budget, Dependencies, Compatibility, Perform
 - Requirements that shipped and proved valuable
 - Format: `- ✓ [Requirement] — [version/phase]`
 - These are locked — changing them requires explicit discussion
+
+**Domain / Interaction Gate:**
+- Required when humans operate the system or when roles, derived access rules, or business objects affect behavior
+- Not required for pure libraries, internal refactors, infrastructure, CI/build work, or machine-only jobs
+- If required, DOMAIN.md and USE_CASES.md are upstream of REQUIREMENTS.md and ROADMAP.md
+- If skipped, record the reason so future agents do not accidentally invent roles or domain objects
 
 **Requirements — Active:**
 - Current scope being built toward

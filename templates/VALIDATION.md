@@ -25,23 +25,38 @@ Template for `NN-VALIDATION.md` — validation architecture for a phase (Nyquist
 
 ## Test Scenarios
 
+For human-interaction phases, scenarios must be generated from USE_CASES.md and REQUIREMENTS.md. Each scenario should name the actor, use case, domain concept, operation, and expected outcome.
+
 ### Scenario 1: [Name]
 
+**Trace:** [Actor] / [UC-___] / [Domain Concept] / [REQ-___]
 **Given** [precondition]
 **When** [action]
 **Then** [expected outcome]
 
 ### Scenario 2: [Name]
 
+**Trace:** [Actor] / [UC-___] / [Domain Concept] / [REQ-___]
 **Given** [precondition]
 **When** [action]
 **Then** [expected outcome]
 
 ### Scenario 3: [Name]
 
+**Trace:** [Actor] / [UC-___] / [Domain Concept] / [REQ-___]
 **Given** [precondition]
 **When** [action]
 **Then** [expected outcome]
+
+## Derived Access Scenarios
+
+Access scenarios are derived from use cases. Test allowed operations, denied operations, and unconfirmed operations that must not be silently exposed.
+
+| Status | Actor | Domain Concept | Operation | Expected Result | Source |
+|--------|-------|----------------|-----------|-----------------|--------|
+| allowed | [Allowed role] | [Concept] | [Operation] | [Succeeds] | [UC-___] |
+| denied | [Denied role] | [Concept] | [Operation] | [Blocked/hidden/unavailable] | [Explicit boundary] |
+| unconfirmed | [Unconfirmed role] | [Concept] | [Operation] | [Not implemented or exposed] | [Open question / future scope] |
 
 ## Coverage Targets
 
@@ -65,6 +80,8 @@ Template for `NN-VALIDATION.md` — validation architecture for a phase (Nyquist
 ## Validation Checklist
 
 - [ ] All Given/When/Then scenarios pass
+- [ ] Human-interaction scenarios preserve actor/use-case/domain trace
+- [ ] Derived access scenarios pass for allowed, denied, and unconfirmed operations
 - [ ] Coverage targets met
 - [ ] Edge cases handled correctly
 - [ ] Error states produce appropriate responses
@@ -88,6 +105,7 @@ Template for `NN-VALIDATION.md` — validation architecture for a phase (Nyquist
 - **Given**: The initial context or precondition
 - **When**: The action or event that occurs
 - **Then**: The expected observable outcome
+- For business systems, the Given/When/Then should read like the use case, not like implementation internals.
 
 **Coverage targets:**
 - Unit: 70-90% depending on phase criticality
@@ -100,3 +118,4 @@ Template for `NN-VALIDATION.md` — validation architecture for a phase (Nyquist
 - Network failures
 - Concurrent operations
 - Authentication/authorization edge cases
+- Missing role-operation pairs from USE_CASES.md should be treated as `unconfirmed`, not as "maybe allowed" and not as a permanent denial.

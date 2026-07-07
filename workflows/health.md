@@ -19,7 +19,7 @@ Workflow for validating `.planning/` directory integrity and repairing issues.
 
 **Root file check (W019):**
 - [ ] No unrecognized non-canonical files at `.planning/` root
-- Canonical artifacts: `PROJECT.md`, `ROADMAP.md`, `STATE.md`, `REQUIREMENTS.md`, `config.json`, and the directories listed above
+- Canonical artifacts: `PROJECT.md`, `DOMAIN.md`, `USE_CASES.md`, `ROADMAP.md`, `STATE.md`, `REQUIREMENTS.md`, `config.json`, and the directories listed above
 - Any other file at root → warn `[W019] Unrecognized .planning/ root file — not a canonical artifact`
 
 ### 2. Required File Checks
@@ -29,6 +29,8 @@ Check each required file exists at `.planning/` root:
 | File | Required | Error Code | Auto-repair |
 |------|----------|------------|-------------|
 | `PROJECT.md` | Yes | E002 | Create stub from template (repopulate manually) |
+| `DOMAIN.md` | Yes | W010 | Create stub from template; may say interaction gate not required |
+| `USE_CASES.md` | Yes | W011 | Create stub from template; may say interaction gate not required |
 | `ROADMAP.md` | Yes | E003 | Create stub from template (repopulate manually) |
 | `STATE.md` | Yes | E004 | Regenerate from ROADMAP structure |
 | `REQUIREMENTS.md` | Conditional | — | Create from template if milestone active |
@@ -100,6 +102,11 @@ For each phase directory in `.planning/phases/`:
 **Plans ↔ Requirements:**
 - [ ] Every PLAN.md has `requirements` in frontmatter
 - [ ] Every PLAN.md requirement maps to REQUIREMENTS.md
+
+**Domain Trace (W012/E012):**
+- [ ] If `scripts/validate_trace.py` exists, run it as part of health checks for projects with PLAN.md files
+- [ ] Trace warnings should be reviewed before execution
+- [ ] Trace errors block execution for human-interaction plans
 
 **Validation Architecture ↔ VALIDATION.md (W009):**
 - [ ] For each phase: if `RESEARCH.md` contains a "Validation Architecture" section, a corresponding `VALIDATION.md` must exist
@@ -182,6 +189,10 @@ When run with repair flag:
 | W006 | warning | Phase in ROADMAP but no directory | No |
 | W007 | warning | Phase on disk but not in ROADMAP | No |
 | W009 | warning | Phase has Validation Architecture in RESEARCH.md but no VALIDATION.md | No |
+| W010 | warning | DOMAIN.md not found | Yes |
+| W011 | warning | USE_CASES.md not found | Yes |
+| W012 | warning | Trace validation warning | No |
+| E012 | error | Trace validation error in human-interaction plan | No |
 | W019 | warning | Unrecognized .planning/ root file — not a canonical artifact | No |
 | I001 | info | Plan without SUMMARY (may be in progress) | No |
 

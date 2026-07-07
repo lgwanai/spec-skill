@@ -32,7 +32,7 @@ Display all available commands with descriptions and usage patterns. Do NOT star
 
 ## Project Structure
 .planning/                All planning documents
-templates/                Document templates (17 files)
+templates/                Document templates, including DOMAIN.md and USE_CASES.md for human-interaction systems
 workflows/                Workflow step-by-step docs
 references/               Questioning and verification guides
 

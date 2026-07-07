@@ -52,13 +52,27 @@ score: [N/M] must-haves verified
 
 ## Requirements Coverage
 
-| Requirement | Status | Blocking Issue |
-|-------------|--------|----------------|
-| [REQ-01]: [description] | ✓ SATISFIED | - |
-| [REQ-02]: [description] | ✗ BLOCKED | [issue] |
-| [REQ-03]: [description] | ? NEEDS HUMAN | [why can't verify programmatically] |
+| Requirement | Actor / Use Case / Concept | Status | Blocking Issue |
+|-------------|----------------------------|--------|----------------|
+| [REQ-01]: [description] | [Role / UC-___ / Concept] | ✓ SATISFIED | - |
+| [REQ-02]: [description] | [Role / UC-___ / Concept] | ✗ BLOCKED | [issue] |
+| [REQ-03]: [description] | [Role / UC-___ / Concept] | ? NEEDS HUMAN | [why can't verify programmatically] |
 
 **Coverage:** [N/M] requirements satisfied
+
+## Domain Trace Verification
+
+[For human-interaction/business phases. If not applicable, write "Not applicable - interaction gate not required."]
+
+| Plan | Actor | Use Case | Domain Concept | Status | Evidence |
+|------|-------|----------|----------------|--------|----------|
+| [NN-MM] | [Role] | [UC-___] | [Concept] | ✓ VERIFIED | [code/test/UAT evidence] |
+
+### Derived Access Verification
+
+| Rule | Allowed Path Evidence | Denied / Not-in-Scope Evidence | Status |
+|------|-----------------------|--------------------------------|--------|
+| [Role can operation concept] | [test/UI/API evidence] | [blocked/hidden/unavailable evidence] | ✓ VERIFIED |
 
 ## Automated Tests
 
