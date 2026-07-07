@@ -46,8 +46,8 @@ These files live inside a phase directory.
 | `NN-UAT.md` | `UAT.md` | Verification | User acceptance test results |
 | `NN-PATTERNS.md` | *(inline)* | Plan phase (pattern mapper) | Analog file mapping for the phase |
 | `NN-UI-SPEC.md` | *(inline)* | UI phase | UI design contract |
-| `NN-SECURITY.md` | *(inline)* | Security phase | Security threat model |
-| `NN-DEBUG.md` | *(inline)* | Debug session | Debug session log |
+| `NN-SECURITY.md` | `SECURITY.md` | Security phase | Security threat model |
+| `NN-DEBUG.md` | `DEBUG.md` | Debug session | Debug session log |
 | `NN-VERIFICATION.md` | `verification-report.md` | Verification | Post-execution verification report |
 
 ---

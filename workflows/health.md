@@ -9,26 +9,30 @@ Workflow for validating `.planning/` directory integrity and repairing issues.
 ### 1. Directory Structure Validation
 
 **Required top-level directories:**
-- [ ] `.planning/` exists
+- [ ] `.planning/` exists (`[E001]` if missing — fatal, cannot proceed)
 - [ ] `.planning/phases/` exists
 - [ ] `.planning/todos/` exists (or created if missing)
 
 **Optional directories (not flagged if missing):**
 - `.planning/research/` — created by research phase
 - `.planning/codebase/` — created by codebase mapping
-- `.planning/milestones/` — created at milestone completion
+
+**Root file check (W019):**
+- [ ] No unrecognized non-canonical files at `.planning/` root
+- Canonical artifacts: `PROJECT.md`, `ROADMAP.md`, `STATE.md`, `REQUIREMENTS.md`, `config.json`, and the directories listed above
+- Any other file at root → warn `[W019] Unrecognized .planning/ root file — not a canonical artifact`
 
 ### 2. Required File Checks
 
 Check each required file exists at `.planning/` root:
 
-| File | Required | Auto-repair |
-|------|----------|-------------|
-| `PROJECT.md` | Yes | Create from template |
-| `ROADMAP.md` | Yes | Create from template |
-| `STATE.md` | Yes | Create from template |
-| `REQUIREMENTS.md` | Conditional | Create from template if milestone active |
-| `config.json` | Yes | Create from template with defaults |
+| File | Required | Error Code | Auto-repair |
+|------|----------|------------|-------------|
+| `PROJECT.md` | Yes | E002 | Create stub from template (repopulate manually) |
+| `ROADMAP.md` | Yes | E003 | Create stub from template (repopulate manually) |
+| `STATE.md` | Yes | E004 | Regenerate from ROADMAP structure |
+| `REQUIREMENTS.md` | Conditional | — | Create from template if milestone active |
+| `config.json` | Yes | W003 / E005 | Create from template with defaults |
 
 **Auto-repair behavior:**
 - Missing required files → Create from `templates/` directory
@@ -50,16 +54,17 @@ Check each required file exists at `.planning/` root:
 - [ ] `phases.allow_parallel_execution` is boolean
 
 **Auto-repair:**
+- Missing config.json → Create from template (`[W003]`)
+- JSON parse error → Reset to template defaults (`[E005]`)
 - Missing fields → Add from template defaults
-- Invalid values → Reset to template defaults
-- Missing config.json entirely → Create from template
+- Invalid values → Reset to template defaults (`[W004]`)
 
 ### 4. Phase Directory Integrity
 
 For each phase directory in `.planning/phases/`:
 
 **Naming convention:**
-- [ ] Format: `NN-name` (e.g., `01-foundation`, `02-features`)
+- [ ] Format: `NN-name` (e.g., `01-foundation`, `02-features`) — `[W005]` if mismatch
 - [ ] NN matches the ROADMAP phase number
 - [ ] No extra characters or spaces
 - [ ] Warn on decimal phases (2.1) — intentional insertions are OK
@@ -67,7 +72,7 @@ For each phase directory in `.planning/phases/`:
 **Required files per phase:**
 - No files are strictly required at directory creation time
 - After planning: PLAN.md files should exist (warn if missing)
-- After execution: SUMMARY.md files should exist (warn if missing)
+- After execution: SUMMARY.md files should exist (warn if missing) — `[I001]`
 
 **Artifact naming convention:**
 - [ ] PLAN.md: `NN-MM-PLAN.md` (e.g., `01-02-PLAN.md`)
@@ -80,13 +85,13 @@ For each phase directory in `.planning/phases/`:
 **Warnings (non-blocking):**
 - Empty phase directories (no plans or summaries)
 - Orphan files not matching naming conventions
-- Phase numbers that don't appear in ROADMAP
+- Phase numbers that don't appear in ROADMAP (`[W006]`/`[W007]`)
 
 ### 5. Cross-Reference Validation
 
 **ROADMAP ↔ Phases:**
-- [ ] Every phase in ROADMAP has a directory in `.planning/phases/`
-- [ ] No phase directories exist for phases not in ROADMAP
+- [ ] Every phase in ROADMAP has a directory in `.planning/phases/` (`[W006]` if missing)
+- [ ] No phase directories exist for phases not in ROADMAP (`[W007]`)
 
 **ROADMAP ↔ Requirements:**
 - [ ] Every phase in ROADMAP references requirement IDs
@@ -95,6 +100,10 @@ For each phase directory in `.planning/phases/`:
 **Plans ↔ Requirements:**
 - [ ] Every PLAN.md has `requirements` in frontmatter
 - [ ] Every PLAN.md requirement maps to REQUIREMENTS.md
+
+**Validation Architecture ↔ VALIDATION.md (W009):**
+- [ ] For each phase: if `RESEARCH.md` contains a "Validation Architecture" section, a corresponding `VALIDATION.md` must exist
+- [ ] If RESEARCH.md has Validation Architecture but VALIDATION.md is missing → warn `[W009] Phase has Validation Architecture in RESEARCH.md but no VALIDATION.md`
 
 ### 6. Output Report
 
@@ -114,12 +123,18 @@ Generate health report:
 - Errors: {N}
 
 ## Errors (must fix)
-- [Error 1]
-- [Error 2]
+- [E002] PROJECT.md not found
+  Fix: Run /spec-new to create
+
+- [E005] config.json: JSON parse error at line 5
+  Fix: Run /spec-health --repair to reset to defaults
 
 ## Warnings (should review)
-- [Warning 1]
-- [Warning 2]
+- [W005] Phase directory "1-setup" doesn't follow NN-name format
+  Fix: Rename to match pattern (e.g., 01-setup)
+
+- [W009] Phase 02 has Validation Architecture in RESEARCH.md but no VALIDATION.md
+  Fix: Create VALIDATION.md or remove the section from RESEARCH.md
 
 ## Auto-Repairs Applied
 - [Repair 1]
@@ -150,21 +165,70 @@ When run with repair flag:
 
 ---
 
+## Error Codes
+
+| Code | Severity | Description | Repairable |
+|------|----------|-------------|------------|
+| E001 | error | .planning/ directory not found | No |
+| E002 | error | PROJECT.md not found | No |
+| E003 | error | ROADMAP.md not found | No |
+| E004 | error | STATE.md not found | Yes |
+| E005 | error | config.json parse error | Yes |
+| W001 | warning | PROJECT.md missing required section | No |
+| W002 | warning | STATE.md references invalid phase | No |
+| W003 | warning | config.json not found | Yes |
+| W004 | warning | config.json invalid field value | No |
+| W005 | warning | Phase directory naming mismatch | No |
+| W006 | warning | Phase in ROADMAP but no directory | No |
+| W007 | warning | Phase on disk but not in ROADMAP | No |
+| W009 | warning | Phase has Validation Architecture in RESEARCH.md but no VALIDATION.md | No |
+| W019 | warning | Unrecognized .planning/ root file — not a canonical artifact | No |
+| I001 | info | Plan without SUMMARY (may be in progress) | No |
+
+---
+
+## Repair Actions
+
+| Action | Effect | Risk |
+|--------|--------|------|
+| createConfig | Create config.json with defaults | None |
+| resetConfig | Delete + recreate config.json | Loses custom settings |
+| regenerateState | Create STATE.md from ROADMAP structure when missing | Loses session history |
+
+**Not repairable (too risky):**
+- PROJECT.md, ROADMAP.md content
+- Phase directory renaming
+- Orphaned plan cleanup
+
+---
+
+## Context Utilization Check
+
+Use Claude Code's `/context` command to view the current session's context utilization. This is an orthogonal diagnostic — independent of `.planning/` directory health.
+
+| Utilization | Status | Recommendation |
+|-------------|--------|----------------|
+| < 60% | healthy | Continue normally |
+| 60-70% | warning | Consider wrapping up current task; plan to resume in fresh context soon |
+| ≥ 70% | critical | Complete current task and commit, then resume in a fresh context |
+
+---
+
 ## Quick Health Commands
 
 ### Check specific aspect:
 ```
-@spec-skill check requirements  # Validate REQUIREMENTS.md
-@spec-skill check phases        # Validate phase directory structure
-@spec-skill check config        # Validate config.json
+/spec-health check requirements  # Validate REQUIREMENTS.md
+/spec-health check phases        # Validate phase directory structure
+/spec-health check config        # Validate config.json
 ```
 
 ### Full health check:
 ```
-@spec-skill health
+/spec-health
 ```
 
 ### Health check with repair:
 ```
-@spec-skill health --repair
+/spec-health --repair
 ```

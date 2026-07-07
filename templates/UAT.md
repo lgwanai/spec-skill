@@ -7,74 +7,84 @@ Template for `NN-UAT.md` — User Acceptance Testing results for a phase.
 ## File Template
 
 ```markdown
+---
+status: [testing | partial | complete]
+phase: [N]
+source: [list of SUMMARY.md files tested]
+started: [ISO timestamp]
+updated: [ISO timestamp]
+---
+
 # Phase [N]: [Name] — User Acceptance Test Results
 
-**Date:** [YYYY-MM-DD]
-**Tester:** [Name or "User"]
 **Status:** [Passed / Failed / Partial]
 
-## Deliverables
+## Current Test
+<!-- OVERWRITE each test - shows where we are -->
 
-### Deliverable 1: [Name]
+number: [N]
+name: [test name]
+expected: |
+  [what user should observe]
+awaiting: user response
 
-**What to verify:** [Description of deliverable]
-**How to verify:** [Steps to test]
-**Expected result:** [What should happen]
+## Tests
 
-**Result:** [Pass / Fail]
-**Notes:** [Observations, issues, screenshots]
+### 1. [Test Name]
+expected: [observable behavior - what user should see]
+result: [pending]
 
----
+### 2. [Test Name]
+expected: [observable behavior]
+result: pass
 
-### Deliverable 2: [Name]
+### 3. [Test Name]
+expected: [observable behavior]
+result: issue
+reported: "[verbatim user response]"
+severity: major
 
-**What to verify:** [Description of deliverable]
-**How to verify:** [Steps to test]
-**Expected result:** [What should happen]
+### 4. [Test Name]
+expected: [observable behavior]
+result: skipped
+reason: [why skipped]
 
-**Result:** [Pass / Fail]
-**Notes:** [Observations, issues, screenshots]
-
----
-
-### Deliverable 3: [Name]
-
-**What to verify:** [Description of deliverable]
-**How to verify:** [Steps to test]
-**Expected result:** [What should happen]
-
-**Result:** [Pass / Fail]
-**Notes:** [Observations, issues, screenshots]
-
----
-
-## Issues Found
-
-### Issue 1: [Title]
-- **Severity:** [Critical / High / Medium / Low]
-- **Deliverable:** [Which deliverable]
-- **Description:** [What's wrong]
-- **Expected:** [What should happen]
-- **Actual:** [What happens]
-- **Fix plan:** [Reference to fix plan or "N/A — acceptable"]
-
-### Issue 2: [Title]
-- **Severity:** [Critical / High / Medium / Low]
-- **Deliverable:** [Which deliverable]
-- **Description:** [What's wrong]
-- **Expected:** [What should happen]
-- **Actual:** [What happens]
-- **Fix plan:** [Reference to fix plan or "N/A — acceptable"]
-
----
+### 5. [Test Name]
+expected: [observable behavior]
+result: blocked
+blocked_by: [server | physical-device | release-build | third-party | prior-phase]
+reason: [why blocked]
 
 ## Summary
 
 - **Total deliverables:** [N]
 - **Passed:** [N]
-- **Failed:** [N]
-- **Issues requiring fixes:** [N]
-- **Issues accepted as-is:** [N]
+- **Issues:** [N]
+- **Pending:** [N]
+- **Skipped:** [N]
+- **Blocked:** [N]
+
+## Issues Found
+
+### Issue 1: [Title]
+- **Severity:** [blocker | major | minor | cosmetic]
+- **Test:** [Which test]
+- **Description:** [What's wrong]
+- **Expected:** [What should happen]
+- **Actual:** [What happens — verbatim user response]
+- **Fix plan:** [Reference to fix plan or "N/A — acceptable"]
+
+## Gaps
+
+<!-- YAML format for /spec-plan --gaps consumption -->
+- truth: "[expected behavior from test]"
+  status: failed
+  reason: "User reported: [verbatim response]"
+  severity: [blocker | major | minor | cosmetic]
+  test: [N]
+  root_cause: ""     # Filled by analysis
+  artifacts: []      # Filled by analysis
+  missing: []        # Filled by analysis
 
 ## Next Steps
 
@@ -84,7 +94,6 @@ Template for `NN-UAT.md` — User Acceptance Testing results for a phase.
 - [ ] Proceed to next phase after all criticals resolved
 
 ---
-
 *UAT completed: [date]*
 ```
 
@@ -97,18 +106,42 @@ Template for `NN-UAT.md` — User Acceptance Testing results for a phase.
 - After automated verification passes
 - Before declaring the phase complete
 
-**Severity levels:**
-- **Critical**: Blocks phase completion, must fix before proceeding
-- **High**: Significant issue, should fix before proceeding
-- **Medium**: Noticeable issue, can fix in next phase
-- **Low**: Minor issue, track but don't block
+**Test result values:**
+- `pending` — Not yet tested
+- `pass` — Works as expected
+- `issue` — Problem found (add `reported` verbatim + `severity` inferred)
+- `skipped` — Not applicable (add `reason`)
+- `blocked` — Cannot test (add `blocked_by` tag + `reason`)
+
+**Severity inference:**
+Severity is INFERRED from user's natural language, never asked directly.
+
+| User describes | Infer |
+|----------------|-------|
+| Crash, error, exception, fails completely, unusable | blocker |
+| Doesn't work, nothing happens, wrong behavior, missing | major |
+| Works but..., slow, weird, minor, small issue | minor |
+| Color, font, spacing, alignment, visual, looks off | cosmetic |
+
+Default: **major** (safe default, user can clarify if wrong)
+
+**`blocked_by` tags:**
+- `server` — Server/backend issue prevents testing
+- `physical-device` — Needs hardware (camera, sensors)
+- `release-build` — Only reproducible in production build
+- `third-party` — External service dependency
+- `prior-phase` — Depends on incomplete earlier phase
+
+**UAT philosophy:**
+Show expected behavior, ask if reality matches. "yes"/"y"/"next"/empty → pass; anything else → issue. Don't ask Pass/Fail buttons; don't ask severity — infer it from the user's words.
 
 **Fix plans:**
 - Critical and High issues should generate new fix plans
 - Add fix plans to the current phase or create a decimal phase (e.g., N.1)
 - Re-execute and re-test after fixes
+- Gaps section (YAML) feeds directly into `/spec-plan --gaps`
 
 **Acceptable failures:**
 - Known limitations documented in Requirements
-- Issues deferred to future milestones
+- Issues deferred to future phases
 - Edge cases that don't affect core functionality

@@ -5,6 +5,8 @@ description: "Comprehensive specification-driven development system for structur
 
 # Specification Driven Development
 
+TRIGGER when: starting a new project from scratch; managing complex multi-phase work that needs structured plan→execute→verify loops; ensuring a verification closure (must_haves + UAT) before marking work done; onboarding a brownfield codebase (`/spec-map-codebase`); running an ad-hoc task that still wants atomic commits and optional verification (`/spec-quick`).
+
 ## Overview
 
 Spec-driven-dev is a structured development system that transforms vague ideas into executable plans through systematic questioning, research, planning, and verification. Inspired by get-shit-done (GSD), it provides templates and workflows for managing software projects from conception to completion.
@@ -20,8 +22,8 @@ All commands are invoked as `/spec-<name>` (e.g., `/spec-new`, `/spec-plan 1`). 
 | Command | Alias | What it does |
 |---------|-------|--------------|
 | `/spec-new` | `/new-project` | Full initialization: questions → requirements → roadmap. Creates `.planning/` structure |
-| `/spec-plan <N>` | `/plan`, `/plan-phase` | Research + create executable PLAN.md for phase N |
-| `/spec-execute <N>` | `/execute`, `/execute-phase` | Execute all plans for phase N in parallel waves |
+| `/spec-plan <N>` | `/plan`, `/plan-phase` | Research + create executable PLAN.md for phase N. Flags: `--prd <file>` (PRD-driven, skip Discuss), `--mvp` (vertical slices + SKELETON.md), `--gaps` (close gaps from VERIFICATION.md) |
+| `/spec-execute <N>` | `/execute`, `/execute-phase` | Execute all plans for phase N in parallel waves. Flags: `--wave N` (run only wave N), `--gaps-only` (only gap-closure plans), `--interactive` (checkpoint between every task) |
 | `/spec-verify <N>` | `/verify`, `/verify-work` | Verify phase N completion: must_haves check, UAT, gap analysis |
 | `/spec-transition` | `/transition` | Complete current phase, update context, prepare next phase |
 | `/spec-next` | `/next` | Auto-detect current state and run the next logical step |
@@ -30,9 +32,9 @@ All commands are invoked as `/spec-<name>` (e.g., `/spec-new`, `/spec-plan 1`). 
 
 | Command | What it does |
 |---------|--------------|
-| `/spec-health [--repair]` | Validate `.planning/` directory integrity. `--repair` auto-fixes missing files |
+| `/spec-health [--repair] [--context]` | Validate `.planning/` directory integrity. `--repair` auto-fixes missing files; `--context` adds a read-only context-utilization diagnostic (healthy/warning/critical) |
 | `/spec-help` | Show all commands and usage guide |
-| `/spec-quick <task>` | Execute ad-hoc task with atomic commits, skip full planning |
+| `/spec-quick <task>` | Execute ad-hoc task with atomic commits, skip full planning. Flags: `--discuss`/`--full`/`--validate`/`--research` (composable quality gates). Subcommands: `list`, `status <slug>`, `resume <slug>` |
 | `/spec-map-codebase [area]` | Analyze existing codebase for brownfield projects |
 | `/spec-config` | Show or update `.planning/config.json` settings |
 
@@ -195,17 +197,19 @@ All templates are in the `templates/` directory. See `templates/README.md` for t
 ### Core Planning Templates
 - `templates/PROJECT.md` — Project vision, requirements, constraints, key decisions
 - `templates/ROADMAP.md` — Phase decomposition with success criteria and progress tracking
-- `templates/STATE.md` — Cross-session memory: position, decisions, blockers, performance
+- `templates/STATE.md` — Cross-session memory: position, decisions, blockers, performance, Deferred Items
 - `templates/REQUIREMENTS.md` — Scoped functional requirements with traceability
-- `templates/config.json` — Workflow configuration (gates, parallelization, quality settings)
+- `templates/config.json` — Workflow configuration (gates, parallelization, quality, `ship.pr_body_sections`, `git.create_tag`)
 
 ### Phase Execution Templates
 - `templates/PLAN.md` — Executable phase plan with XML task structure, must_haves, user_setup
 - `templates/SUMMARY.md` — Post-execution summary with frontmatter for context assembly
 - `templates/discovery.md` — Phase discussion decisions and context capture
+- `templates/research.md` — Phase ecosystem research (NN-RESEARCH.md): libraries, patterns, expert approaches, locked constraints from discovery
 - `templates/VALIDATION.md` — Validation architecture with Given/When/Then scenarios
-- `templates/UAT.md` — User acceptance testing results with issue tracking
-- `templates/verification-report.md` — Post-execution verification against must_haves
+- `templates/UAT.md` — User acceptance testing results with issue tracking (five-state model: pass/skipped/blocked + severity inference)
+- `templates/verification-report.md` — Post-execution verification against must_haves (three-state: passed/gaps_found/human_needed + Anti-Patterns Found)
+- `templates/user-setup.md` — USER-SETUP.md: human-required external config (API keys, dashboards) Claude cannot automate
 - `templates/continue-here.md` — Session handoff for paused work
 
 ### Brownfield Analysis Templates
@@ -216,6 +220,12 @@ All templates are in the `templates/` directory. See `templates/README.md` for t
 - `templates/codebase/integrations.md` — External services and dependencies
 - `templates/codebase/testing.md` — Testing approach and coverage
 - `templates/codebase/concerns.md` — Known issues and technical debt
+
+### Quality, Security & Operations Templates
+- `templates/SECURITY.md` — Security contract: threat register, trust boundaries, accepted risks, audit trail (ASVS-leveled)
+- `templates/DEBUG.md` — Active debug session tracker (`.planning/debug/[slug].md`): hypothesis/test/next-action loop with status state machine
+- `templates/retrospective.md` — Living project retrospective: what was built, what worked, inefficiencies, patterns to persist
+- `templates/user-profile.md` — Developer profile with behavioral directives and confidence ratings, generated from session analysis
 
 ### Workflow Documentation
 - `workflows/execute-plan.md` — Step-by-step plan execution with verification and error recovery
@@ -298,14 +308,14 @@ Slash command definitions that trigger specific workflows. Each command file des
 
 **Commands in this skill:**
 - `commands/spec/new.md` — `/spec-new`: Initialize a new project
-- `commands/spec/plan.md` — `/spec-plan <N>`: Plan a phase
-- `commands/spec/execute.md` — `/spec-execute <N>`: Execute a phase
+- `commands/spec/plan.md` — `/spec-plan <N>`: Plan a phase (flags: `--prd <file>`, `--mvp`, `--gaps`)
+- `commands/spec/execute.md` — `/spec-execute <N>`: Execute a phase (flags: `--wave N`, `--gaps-only`, `--interactive`)
 - `commands/spec/verify.md` — `/spec-verify <N>`: Verify phase completion
 - `commands/spec/transition.md` — `/spec-transition`: Complete and prepare next phase
 - `commands/spec/next.md` — `/spec-next`: Auto-detect next step
 - `commands/spec/help.md` — `/spec-help`: Show command reference
-- `commands/spec/quick.md` — `/spec-quick`: Execute ad-hoc task
-- `commands/spec/health.md` — `/spec-health [--repair]`: Check directory integrity
+- `commands/spec/quick.md` — `/spec-quick`: Ad-hoc task (flags: `--discuss`/`--full`/`--validate`/`--research`; subcmds: `list`/`status`/`resume`)
+- `commands/spec/health.md` — `/spec-health [--repair] [--context]`: Check directory integrity
 - `commands/spec/map-codebase.md` — `/spec-map-codebase`: Analyze existing codebase
 - `commands/spec/config.md` — `/spec-config`: Manage configuration
 
@@ -349,10 +359,17 @@ Executable code (Python/Bash/etc.) that can be run directly to perform specific 
 ### references/
 Documentation and reference material intended to be loaded into context to inform Claude's process and thinking.
 
-**Examples from other skills:**
-- Product management: `communication.md`, `context_building.md` - detailed workflow guides
-- BigQuery: API reference documentation and query examples
-- Finance: Schema documentation, company policies
+**References in this skill:**
+- `references/questioning.md` — Questioning strategies and mental models for requirements and phase-level discovery
+- `references/verification-patterns.md` — Verification types, workflows, and goal-backward must_haves patterns
+- `references/checkpoints.md` — Checkpoint types (human-verify/decision/action) and golden rules for interaction boundaries
+- `references/domain-probes.md` — Domain-aware follow-up probes (auth, real-time, storage, etc.) for requirement gathering
+- `references/user-story-template.md` — Canonical "As a / I want to / So that" user story format and structural rules
+- `references/tdd.md` — TDD disciplines: red-green-refactor cycle, when TDD improves quality, cycle overhead
+- `references/debugger-philosophy.md` — Evergreen debugging disciplines: user=reporter, Claude=investigator
+- `references/common-bug-patterns.md` — Frequency-ordered bug checklist (~80% of bugs) to scan before hypothesizing
+- `references/thinking-models-debug.md` — Structured reasoning models for debugging (fault tree, hypothesis-driven, Occam's razor)
+- `references/ai-evals.md` — AI evaluation reference: model vs product evals, measurement approaches, rubric design
 
 **Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that Claude should reference while working.
 

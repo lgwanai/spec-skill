@@ -1,7 +1,7 @@
 ---
 name: spec-health
-description: "Validate .planning/ directory integrity. Check required files, config schema, phase directory structure, and artifact naming conventions. Auto-repair with --repair flag."
-argument-hint: "[--repair]"
+description: "Validate .planning/ directory integrity. Check required files, config schema, phase directory structure, and artifact naming conventions. Auto-repair with --repair, context utilization diagnostic with --context."
+argument-hint: "[--repair] [--context]"
 ---
 
 # /spec-health — Health Check
@@ -26,6 +26,20 @@ See `workflows/health.md` for the complete health check procedure.
 - Missing directories → Create
 - Corrupted content → Report for manual fix
 
+## Context Utilization (`--context`)
+
+Orthogonal check independent of directory health. Diagnoses the running session's context utilization to catch reasoning-quality degradation before it happens.
+
+**How to measure (self-contained — no SDK):** Ask the user to run Claude Code's built-in `/context` command (or read the context-window indicator shown in the UI) and report the utilization percentage. Then render one of three states:
+
+| Utilization | State    | Action                                                                       |
+|-------------|----------|------------------------------------------------------------------------------|
+| < 60%       | healthy  | no action — context is comfortable                                           |
+| 60% – 70%   | warning  | recommend starting a fresh thread for any remaining work                     |
+| ≥ 70%       | critical | reasoning quality may degrade past the fracture point — open a new thread before continuing |
+
+`--context` may be combined with `--repair` or run alone. When combined, run the context check as the final step and include its state in the output report. `--context` never mutates files — it is a read-only diagnostic.
+
 ## Output
 
 Health report with:
@@ -33,6 +47,7 @@ Health report with:
 - Errors requiring immediate fix
 - Warnings to review
 - Auto-repairs applied
+- Context utilization state (when `--context` passed)
 - Recommendations
 
 ## Key Rules
@@ -40,3 +55,4 @@ Health report with:
 - Template-created files include `<!-- AUTO-GENERATED -->` header
 - Phase directories with no plans or summaries → warning only
 - config.json with invalid types → reset to defaults
+- `--context` is read-only; it never writes or repairs files

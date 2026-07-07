@@ -49,6 +49,14 @@
     "sub_repos": []
   },
 
+  "ship": {
+    "pr_body_sections": []
+  },
+
+  "git": {
+    "create_tag": true
+  },
+
   "phases": {
     "max_plans_per_phase": 5,
     "default_wave_size": 2,
